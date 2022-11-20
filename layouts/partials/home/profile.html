@@ -1,0 +1,58 @@
+<div id="homepagecontent" class="flex items-center justify-center h-full">
+    <div class="flex flex-col sm:flex-row w-full items-center text-left sm:items-stretch sm:text-left">
+        <div id="homepagephoto">
+            {{ with .Site.Author.image }}
+            {{ $authorImage := resources.Get . }}
+            {{ if $authorImage }}
+            {{ $authorImage := $authorImage.Fill "288x288" }}  
+              <img class="rounded-full w-36 h-36" width="144" height="144" alt="{{ $.Site.Author.name | default " Author" }}"
+                  src="{{ $authorImage.RelPermalink }}" />
+            {{ end }}
+            {{ end }}
+        </div>
+        <article class="flex flex-col justify-center {{ if not .Site.Params.homepage.showRecent }}
+            h-full
+          {{ end }}">
+          <header class="mb-3">
+            <!-- {{ with .Site.Author.image }}
+            {{ $authorImage := resources.Get . }}
+            {{ if $authorImage }}
+            {{ $authorImage := $authorImage.Fill "288x288" }}
+            <img class="mb-2 rounded-full w-36 h-36" width="144" height="144" alt="{{ $.Site.Author.name | default " Author" }}"
+              src="{{ $authorImage.RelPermalink }}" />
+            {{ end }}
+            {{ end }} -->
+            <h1 class="text-4xl font-extrabold mb-2">
+              <p class="intro">
+                <!-- {{ .Site.Author.name | default .Site.Title }} -->
+              </p>
+            </h1>
+            <script src="https://unpkg.com/typeit@8.7.0/dist/index.umd.js"></script>
+            <script>
+              new TypeIt(".intro", {
+                speed: 50,
+                waitUntilVisible: true
+              })
+              .type("Hey,")
+              .pause(400)
+              .type(" I'm Max!")
+              .pause(200)
+              .type("  👋🏻")
+              .go();
+            </script>
+            {{ with .Site.Author.headline }}
+            <h2 class="text-xl text-neutral-500 dark:text-neutral-400">
+              {{ . | markdownify | emojify }}
+            </h2>
+            {{ end }}
+            <div class="mt-1 text-2xl">
+              {{ partialCached "author-links.html" . }}
+            </div>
+          </header>
+          <section class="prose dark:prose-invert">{{ .Content | emojify }}</section>
+        </article>        
+    </div>
+</div>
+<section>
+  {{ partial "recent-articles.html" . }}
+</section>
