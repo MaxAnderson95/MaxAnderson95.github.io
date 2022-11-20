@@ -2,7 +2,7 @@
 title: "DNS Precheck Failure for NSX Application Platform on RKE2"
 date: 2022-11-20T18:23:30Z
 draft: false
-tags: ["NSX","Kubernetes"]
+tags: ["NSX","NAPP","K8s","RKE2"]
 ---
 
 ## The Problem
