@@ -1,0 +1,5 @@
+{{ $image := .Page.Resources.GetMatch .Destination }}
+{{ if gt $image.Width 2000 }}
+    {{ $image = $image.Resize "2000x" }}
+{{ end }}
+<img src="{{ $image.RelPermalink | safeURL }}" {{ with .Text }} alt="{{ . }}" {{ end }} {{ with .Title }} title="{{ . }}" {{ end }}/>
