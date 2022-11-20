@@ -1,0 +1,15 @@
+title = "Max Anderson"
+
+[author]
+name = "Max Anderson"
+image = "img/Max.jpg"
+headline = """
+I work as a Systems Engineer specializing in\n
+Datacenter/Network Virtualization, Application Delivery, and Automation.
+"""
+bio = "I'm from sunny Southwest Florida, but currently live in the Atlanta Metro Area working as a Systems Engineer for a mid-size Credit Union. In my free time I enjoy watching Formula 1, playing video games, and spending time with friends and family."
+links = [
+  { github = "https://github.com/MaxAnderson95" },
+  { linkedin = "https://www.linkedin.com/in/max-anderson-a7333054/" },
+  { email = "mailto:max.a.anderson95@gmail.com" }
+]
