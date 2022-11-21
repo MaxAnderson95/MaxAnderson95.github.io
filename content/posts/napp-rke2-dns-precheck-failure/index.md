@@ -7,7 +7,7 @@ tags: ["NSX","NAPP","K8s","RKE2"]
 
 ## The Problem
 
-During my quest to roll out the new NSX Application Platform in our production environment, I came across a very odd issue when running through the installation wizard to install NAPP on an RKE2 Kubernetse cluster.
+During my quest to roll out the new NSX Application Platform in our production environment, I came across a very odd issue when running through the installation wizard to install NAPP on an RKE2 Kubernetes cluster.
 
 During the **Precheck Platform** step of the wizard, the **Kubernetes Cluster DNS Domain Precheck** step reported as failed. When viewing the details, it simply says to contact your administrator, and the [VMware docs](https://docs.vmware.com/en/VMware-NSX/4.0/nsx-application-platform/GUID-BF5917B3-F873-4D8F-BF04-1F7CC5241EE5.html) that have a page for what to do on pre-check failures was conveniently missing a section for this specific check. How helpful... 
 
