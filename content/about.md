@@ -40,5 +40,6 @@ I also have a stong passion for DevOps and enjoy writing code to solve problems.
 * [VMware Certified Professional: Network Virtualization](https://www.credly.com/badges/24b2bcb0-afac-4d22-a510-39a209ed3edc)
 * [VMware NSX Advanced Load Balancer (Avi) for Operators Skills](https://www.credly.com/badges/588dc02e-ea4e-4ffd-87d3-580fc34249e4)
 * [Microsoft Certified: Azure Fundamentals](https://www.credly.com/earner/earned/badge/3587303b-1d58-4096-9350-fb0df6c18cda)
+* [HashiCorp Certified: Terraform Associate](https://www.credly.com/earner/earned/badge/8a48bb75-651d-4ab4-a5bc-9306c142dc47)
 * Rubrik Certified Systems Administrator
 * LogicMonitor Certified Professional
