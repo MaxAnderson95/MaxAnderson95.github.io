@@ -46,7 +46,7 @@ It turns out that RKE2 does not use Kubeadm to form the cluster and thus never w
 
 So how do we fix this without switching to another K8s distribution? If we look at a **kubeadm-config** ConfigMap from another cluster (I used a [Kind](https://kind.sigs.k8s.io/) cluster), we find that the **dnsDomain** is indeed listed.
 
-```txt {linenos=false,hl_lines=[1,"28-29"]}
+```yaml {linenos=false,hl_lines=[1,"28-29"]}
 > kubectl get configmap -n kube-system kubeadm-config -o yaml
 
 apiVersion: v1
@@ -89,7 +89,7 @@ metadata:
 ```
 
 To fix we simply create our own **kubeadm-config** ConfigMap with just the data we need:
-```txt {linenos=false,hl_lines=["4-5"]}
+```yaml {linenos=false,hl_lines=["4-5"]}
 apiVersion: v1
 data:
   ClusterConfiguration: |
@@ -107,7 +107,7 @@ By default most clusters use **cluster.local** as the DNS domain name. This is t
 
 Then we just throw this in a file and apply it to our cluster!
 
-```
+```txt
 > kubectl apply -f fake-kubeadm-config.yaml
 
 configmap/kubeadm-config created
@@ -119,7 +119,7 @@ If we run the prechecks again, voila, the DNS domain name check is now passing!
 ## TL;DR
 Apply the following configmap to your cluster and re-run the wizard:
 
-```txt
+```yaml
 apiVersion: v1
 data:
   ClusterConfiguration: |
