@@ -507,11 +507,17 @@ Once deployed if we inspect the logs of the Orbital-Sync pod we should see it su
 1/7/2023, 11:57:05 PM: Waiting 1 minutes...
 ```
 
-## Wrap-up and Final Thoughts
+### Point clients to Pi-hole
 
 The final step is to have your web clients (phones, laptops, game consoles, smart speakers, etc) use your Pi-holes for resolving DNS queries. This is best achieved by adjusting the DHCP options on your DHCP server. This is *usually* a setting in your home router.
 
-Some other considerations I didn't cover is setting up periodic pihole backups to an external location in the event you lose your Kubernetes cluser or the underlying storage fails. Stay tuned, perhaps this will be another post 😊.
+More details on this can be found in [Pi-hole's documentation](https://docs.pi-hole.net/main/post-install/).
+
+## Wrap-up and Final Thoughts
+
+The big question is... does this even work?? Yes, it does! I found that if I took down the node that was announcing the DNS external IP, within about 5 seconds MetalLB would re-announce (send a gARP) on another node and my clients could continue making DNS queries.
+
+Some other considerations I didn't cover in this guide is setting up periodic Pi-hole configuration backups to an external location in the event you lose your Kubernetes cluser or the underlying storage fails. Stay tuned, perhaps this will be another post 😊.
 
 Hopefully you found this helpful! All of the manifests for this project can be found on my [GitHub](https://github.com/MaxAnderson95/pi-hole-ha-on-k8s).
 
