@@ -1,7 +1,7 @@
 ---
 title: "Deploying a highly-available Pi-hole ad-blocker on K8s"
 date: 2023-01-07T00:00:00Z
-draft: true
+draft: false
 tags: ["pihole","K8s","RKE2"]
 showTableOfContents: true
 ---
