@@ -63,6 +63,8 @@ data:
   PIHOLE_DNS_: "8.8.8.8;8.8.4.4"
 ```
 
+Here I'm setting `PIHOLE_DNS_` to the IP addresses of upstream DNS servers I wish to use if PIHOLE doesn't know the answer. I'm using Google's public DNS service, but these can be replaced with any public resolver.
+
 ### Pi-hole Admin Password Secret
 
 Next we'll create a secret to store our Pi-hole administrator password. This is critical because this password will be used by Orbital-Sync to log into each node to perform backup and restore operations. We do this by creating a secret object with a `WEBPASSWORD` data field.
