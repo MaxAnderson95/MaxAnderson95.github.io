@@ -7,7 +7,8 @@ headline = """
 I work as a Systems Engineer specializing in Datacenter/Network Virtualization, \n
 Application Delivery, and Automation. \n
 \n
-Recently, I've been implementing Kubernetes and cloud-native tools across professional endeavors and independent projects alike.
+Recently, I've been implementing Kubernetes and cloud-native tools \n
+across professional and independent projects alike.
 """
 bio = "I'm from sunny Southwest Florida, but currently live in the Atlanta Metro Area working as a Systems Engineer. In my free time I enjoy watching Formula 1, playing video games, and homelabbing."
 links = [
