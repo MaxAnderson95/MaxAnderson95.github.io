@@ -37,7 +37,7 @@ I also have a stong passion for DevOps and enjoy writing code to solve problems.
 
 ## Certifications
 
-* [Certified Kuberneres Administrator (CKA)](https://www.credly.com/badges/223dc691-1730-4d83-8039-0f379787dad7/public_url)
+* [Certified Kubernetes Administrator (CKA)](https://www.credly.com/badges/223dc691-1730-4d83-8039-0f379787dad7/public_url)
 * [VMware Certified Professional: Data Center Virtualization](https://www.credly.com/badges/bd73689e-12f2-4e64-aec0-c50470a9e272)
 * [VMware Certified Professional: Network Virtualization](https://www.credly.com/badges/24b2bcb0-afac-4d22-a510-39a209ed3edc)
 * [VMware NSX Advanced Load Balancer (Avi) for Operators Skills](https://www.credly.com/badges/588dc02e-ea4e-4ffd-87d3-580fc34249e4)
