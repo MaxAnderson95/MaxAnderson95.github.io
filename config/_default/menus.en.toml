@@ -1,14 +1,20 @@
 [[main]]
-  name = "Home"
-  pageRef = "/"
-  weight = 1
+name = "Home"
+pageRef = "/"
+weight = 1
+
+# [[main]]
+# name = "About Me"
+# pageRef = "about"
+# weight = 10
 
 [[main]]
-  name = "About Me"
-  pageRef = "about"
-  weight = 10
+name = "Blog"
+pageRef = "posts"
+weight = 15
 
 [[main]]
-  name = "Blog"
-  pageRef = "posts"
-  weight = 15
+name = "Resume"
+url = "https://resume.maxanderson.tech"
+[main.params]
+target = "_blank"
