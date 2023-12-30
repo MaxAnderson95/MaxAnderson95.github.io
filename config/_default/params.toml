@@ -1,15 +1,15 @@
-colorScheme = "ocean"
+colorScheme = "custom"
 enableSearch = true
 enableCodeCopy = true
 defaultAppearance = "dark"
 
 [homepage]
-    layout = "profile"
+layout = "profile"
 
 [header]
-    layout = "hybrid"
-    showTitle = false
+layout = "hybrid"
+showTitle = false
 
 [footer]
-    showCopyright = false
-    showThemeAttribution = false
+showCopyright = false
+showThemeAttribution = false
