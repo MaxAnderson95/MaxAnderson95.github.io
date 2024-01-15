@@ -223,6 +223,14 @@ Next we prepare our Kubernetes environment to run our custom agent container.
 
     <img src="images/pat.png" width="300px" />
 
+    Give the token at minimum the "Read & manage" permission on "Agent Pools".
+
+    {{< alert >}}
+**Warning!** Take caution with what permissions you give this PAT. All jobs that run on this agent will be able to read this token, so you shouldn't give it any more access than what is required.
+
+Each job that runs gets a separate [job access token](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/access-tokens?view=azure-devops&tabs=yaml) which is used to clone repos, add git tags, upload artifacts, etc. The token we've generated here is stricly for the agent to register itself and pick up new jobs.
+{{< /alert >}}
+
 1. Create a namespace to deploy our Kubernetes resources to:
 
     ```yaml
