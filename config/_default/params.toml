@@ -1,7 +1,8 @@
 colorScheme = "custom"
 enableSearch = true
 enableCodeCopy = true
-defaultAppearance = "dark"
+defaultAppearance = "light"
+autoSwitchAppearance = false
 
 [homepage]
 layout = "profile"
