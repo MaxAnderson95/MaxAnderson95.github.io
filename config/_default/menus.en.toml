@@ -13,8 +13,8 @@ name = "Blog"
 pageRef = "posts"
 weight = 15
 
-[[main]]
-name = "Resume"
-url = "https://resume.maxanderson.tech"
-[main.params]
-target = "_blank"
+# [[main]]
+# name = "Resume"
+# url = "https://resume.maxanderson.tech"
+# [main.params]
+# target = "_blank"
