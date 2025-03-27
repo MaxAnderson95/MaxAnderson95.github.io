@@ -5,17 +5,10 @@ name = "Max Anderson"
 image = "img/Max.png"
 headline = """
 <p class="mb-3">
-I work as a Systems Engineer specializing in Datacenter/Network Virtualization, 
-<br>
-Application Delivery, and Automation.
-</p>
-<p>
-Recently, I've been implementing Kubernetes and cloud-native tools across
-<br>
-professional and independent projects alike.
+I'm a Sr. Systems Engineer specializing in DevOps and Cloud Infrastructure.
 </p>
 """
-bio = "I'm from sunny Southwest Florida, but currently live in the Atlanta Metro Area working as a Systems Engineer. In my free time I enjoy watching Formula 1, playing video games, and homelabbing."
+bio = "I'm from sunny Southwest Florida, but currently live in the Atlanta Metro Area working for Georgia United Credit Union. In my free time I enjoy watching Formula 1 🏎️, being a dog dad 🐕, and homelabbing 👨🏻‍🔬."
 links = [
   { github = "https://github.com/MaxAnderson95" },
   { linkedin = "https://www.linkedin.com/in/maxanderson95" },
