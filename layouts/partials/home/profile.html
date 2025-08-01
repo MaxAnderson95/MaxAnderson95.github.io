@@ -4,7 +4,7 @@
   {{ end }} flex flex-col items-left justify-center text-left"
 >
   <header class="flex flex-row flex-wrap items-left mb-3">
-    {{ with .Site.Author.image }}
+    {{ with .Site.Params.author.image }}
       {{ $authorImage := resources.Get . }}
       {{ if $authorImage }}
         {{ $authorImage := $authorImage.Fill "288x288" }}
@@ -13,7 +13,7 @@
           class="mb-3 mr-3 rounded-full h-36 w-36"
           width="144"
           height="144"
-          alt="{{ $.Site.Author.name | default "Author" }}"
+          alt="{{ $.Site.Params.author.name | default "Author" }}"
           src="{{ $authorImage.RelPermalink }}"
         />
       {{ end }}
@@ -35,7 +35,7 @@
           .go();
         </script>
       </h1>
-      {{ with .Site.Author.headline }}
+      {{ with .Site.Params.author.headline }}
         <h2 class="text-xl text-neutral-500 dark:text-neutral-400">
           {{ . | emojify }}
         </h2>

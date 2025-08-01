@@ -1,6 +1,6 @@
 title = "Max Anderson"
 
-[author]
+[params.author]
 name = "Max Anderson"
 image = "img/Max.png"
 headline = """
