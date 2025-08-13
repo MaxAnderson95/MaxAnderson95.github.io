@@ -73,6 +73,50 @@ In the case of Kubernetes, the workload uses its service account token (mounted 
 In all cases, the workload has ***implicit access*** to the IDP.
 {{< /alert >}}
 
+### Example GitHub OIDC Token
+
+To better understand what these ID tokens look like in practice, here's an example of a decoded GitHub Actions OIDC token:
+
+```json
+{
+  "typ": "JWT",
+  "alg": "RS256",
+  "x5t": "example-thumbprint",
+  "kid": "example-key-id"
+}
+{
+  "jti": "example-id",
+  "sub": "repo:octo-org/octo-repo:environment:prod",
+  "environment": "prod",
+  "aud": "https://github.com/octo-org",
+  "ref": "refs/heads/main",
+  "sha": "example-sha",
+  "repository": "octo-org/octo-repo",
+  "repository_owner": "octo-org",
+  "actor_id": "12",
+  "repository_visibility": "private",
+  "repository_id": "74",
+  "repository_owner_id": "65",
+  "run_id": "example-run-id",
+  "run_number": "10",
+  "run_attempt": "2",
+  "runner_environment": "github-hosted",
+  "actor": "octocat",
+  "workflow": "example-workflow",
+  "head_ref": "",
+  "base_ref": "",
+  "event_name": "workflow_dispatch",
+  "ref_type": "branch",
+  "job_workflow_ref": "octo-org/octo-automation/.github/workflows/oidc.yml@refs/heads/main",
+  "iss": "https://token.actions.githubusercontent.com",
+  "nbf": 1632492967,
+  "exp": 1632493867,
+  "iat": 1632493567
+}
+```
+
+This token contains rich contextual information about the GitHub Actions run, which can be used by the RP for fine-grained authorization decisions.
+
 ## Token Exchange & Verification - Under the Hood
 
 This all seems like magic, how does this actually work? If you're curious about the details, keep reading! Otherwise, look out for my future posts where I'll show you how to implement this in practice.
