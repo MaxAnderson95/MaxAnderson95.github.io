@@ -109,10 +109,10 @@ We should note that Relying Parties follow one of two methods for token exchange
     # Exchange the ID token for a temporary access token
     ACCESS_TOKEN=$(curl -X POST https://api.cloudsmith.io/openid/$CLOUDSMITH_ORG/ \
       -H "Content-Type: application/json" \
-      -d '{
+      -d "{
         "oidc_token": "$EXTERNAL_OIDC_TOKEN",
         "service_slug": "$SERVICE_ACCOUNT_SLUG"
-      }' | jq -r '.token')
+      }" | jq -r '.token')
 
     # Now use the temporary access token to access Cloudsmith resources
     curl -H "X-Api-Key: $ACCESS_TOKEN" \
@@ -129,11 +129,11 @@ When the RP receives an ID token from the workload, it performs several verifica
 
 1. **Validate the Header**: The RP checks the token's header for the `alg` (algorithm) and `kid` (key ID) fields. The `alg` field indicates the signing algorithm used, while the `kid` field helps identify the correct public key for signature verification.
 
-1. **Discover the IDP's Public Keys**: The RP retrieves the IDP's public keys from a well-known URL, typically found in the IDP's OIDC discovery document (e.g., `https://<IDP>/.well-known/openid-configuration`). This base URL is configured during the initial trust setup between the IDP and RP by the human administrator.
+1. **Discover the IDP's Public Keys**: The RP retrieves the IDP's public keys from a well-known URL, typically found in the IDP's OIDC discovery document (e.g., `https://<IDP>/.well-known/openid-configuration`). The base URL of the OIDC issuer is configured during the initial trust setup between the IDP and RP by the human administrator.
 
     The OIDC discovery document contains a `jwks_uri` field that points to the JSON Web Key Set (JWKS) document endpoint.
 
-1. **Verify the Signature**: Using the `kid` from the token's header, the RP selects the appropriate public key from the JWKS document. It then verifies the token's signature using this public key and the specified algorithm.
+1. **Verify the Signature**: Using the `kid` from the token's header, the RP selects the appropriate public key from the JWKS document. It then verifies the token's signature using this public key and the specified algorithm. This ensures that the token was issued by the trusted IDP and has not been tampered with.
 
 1. **Validate the Claims**: The RP checks the token's claims (found in the payload) to ensure they meet specific criteria, such as:
 
@@ -141,7 +141,7 @@ When the RP receives an ID token from the workload, it performs several verifica
 
     * **Subject (`sub`)**: The RP checks that the `sub` claim is present and contains a valid identifier for the workload.
 
-    * **Audience (`aud`)**: The RP checks that the `aud` claim includes its own identifier, ensuring the token was intended for it.
+    * **Audience (`aud`)**: The RP checks that the `aud` claim includes its own identifier, ensuring the token was intended for it, and not another RP.
 
     * **Expiration (`exp`)**: The RP ensures that the token has not expired by checking the `exp` claim against the current time.
 
@@ -149,7 +149,7 @@ When the RP receives an ID token from the workload, it performs several verifica
 
     * **Not Before (`nbf`)**: The RP verifies that the token is valid for use by checking the `nbf` claim against the current time. Allows for issuing tokens that become valid at a future time.
 
-    * **Custom Claims**: Depending on the implementation, the RP may also validate additional custom claims specific to its requirements.
+    * **Custom Claims**: Depending on the implementation, the RP may also validate additional custom claims specific to the IDP that issued the token.
 
         For example GitHub includes several custom claims in their ID tokens, such as:
         * `repository`: The repository the workflow is running in.
@@ -160,21 +160,17 @@ When the RP receives an ID token from the workload, it performs several verifica
 
 1. **Extract Identity Information**: If all verification steps pass, the RP extracts the necessary identity information from the token's claims to determine the workload's identity and permissions. This information is then used to authorize the workload's access to resources. In most cases, the RP maps the workload's identity to a specific service account or role within its own system, granting the appropriate permissions based on this mapping.
 
-1. **Issue Access Token**: Finally, the RP issues a short-lived access token to the workload, with the permissions and scopes defined by the claims in the ID token. This access token is typically valid for a limited time and can be used to access the RP's APIs or services.
+1. **Issue Access Token**: Finally, the RP issues a short-lived access token to the workload, with the permissions and scopes defined by the service account or role mapped to it by the administrator. This access token is typically valid for a limited time and can be used to access the RP's APIs or services.
 
 ## Security Considerations
 
 While WIF significantly improves security compared to long-lived secrets, there are important considerations to keep in mind:
 
-* **Trust Relationship Configuration**: The initial trust setup between the IDP and RP is critical. Misconfigured trust relationships can allow unauthorized workloads to obtain access tokens. Always follow the principle of least privilege when configuring audience claims and subject mappings.
+* **Trust Relationship Configuration and Claim Validation**: The initial trust setup between the IDP and RP is critical. Misconfigured trust relationships can allow unauthorized workloads to obtain access tokens. Always follow the principle of least privilege when configuring audience claims and subject mappings. Proper validation of `sub`, `aud`, and custom claims is essential, especially with shared IDP infrastructures like GitHub's default issuer URL (`https://token.actions.githubusercontent.com`). Without validating claims like `sub`, `repository`, `ref`, and/or `actor`, an attacker could potentially issue a token from their own GitHub account to access resources intended for a different organization.
 
 * **Token Replay Attacks**: Although tokens are short-lived, they can still be intercepted and replayed within their validity window. Ensure your infrastructure uses encrypted transport (TLS) for all token exchanges.
 
 * **Clock Skew**: Token validation relies on timestamp claims (`exp`, `iat`, `nbf`). Significant clock differences between systems can cause valid tokens to be rejected or expired tokens to be accepted. Maintain synchronized system clocks and configure appropriate clock skew tolerance.
-
-* **Audience Validation**: Proper `aud` (audience) claim validation is crucial to prevent tokens intended for one service from being used with another. Each RP should strictly validate that tokens are intended for its specific service identifier.
-
-* **Subject and Custom Claim Validation**: The `sub` (subject) claim and custom claims are critical for preventing unauthorized access, especially with shared IDP infrastructures. For example, GitHub uses a shared issuer URL by default (`https://token.actions.githubusercontent.com`) across all organizations and repositories. Without proper validation of claims like `sub`, `repository`, `ref`, and `actor`, an attacker could potentially issue a token from their own GitHub account and use it to access resources intended for a different organization.
 
 ## Conclusion
 
@@ -186,4 +182,4 @@ WIF represents a fundamental shift in how we approach service-to-service authent
 
 The technical foundation we've covered here, from OIDC token exchange to signature verification, enables secure, scalable authentication patterns that are becoming the new standard across cloud platforms.
 
-In my upcoming posts, I'll share how I've implemented WIF across various platforms including GitHub Actions, Azure, and Kubernetes. These real-world examples will demonstrate practical approaches to eliminating long-lived secrets in modern infrastructure. Stay tuned for hands-on guides that show WIF in action.
+In my upcoming posts, I'll share how I've implemented WIF across various platforms including GitHub Actions, Azure, and Kubernetes. These real-world examples will demonstrate practical approaches to eliminating long-lived secrets in modern infrastructure. Stay tuned for hands-on guides that show WIF in action!
