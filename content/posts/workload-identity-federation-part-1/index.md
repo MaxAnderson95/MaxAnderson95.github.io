@@ -1,7 +1,7 @@
 ---
 title: "The End of Long-Lived Secrets: How Workload Identity Federation is a Security Superpower"
 date: 2025-08-12T00:00:00Z
-draft: true
+draft: false
 tags: ["DevOps", "Security", "OIDC", "Workload Identity Federation"]
 showTableOfContents: false
 ---
