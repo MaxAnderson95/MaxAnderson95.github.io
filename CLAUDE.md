@@ -17,7 +17,7 @@ This is a personal website/blog built with Hugo and the Congo theme. The site is
 
 ### Local Development
 ```bash
-# Install Hugo (required version 0.121.1+)
+# Install Hugo (required version 0.148.2+)
 # On macOS: brew install hugo
 # On Ubuntu: Download from GitHub releases as shown in .github/workflows/hugo.yml
 
@@ -32,6 +32,10 @@ hugo --minify
 
 # Update Hugo modules (theme updates)
 hugo mod get -u
+
+# Clean generated resources and public directory
+hugo mod clean
+rm -rf public/ resources/
 ```
 
 ### Content Management
@@ -74,11 +78,13 @@ tags: ["tag1", "tag2"]
 ## Deployment
 
 The site deploys automatically to GitHub Pages when changes are pushed to the `main` branch. The GitHub Actions workflow:
-1. Installs Hugo CLI (extended version)
-2. Checks out code with submodules
-3. Caches Hugo modules
-4. Builds site with `hugo --minify`
+1. Installs Hugo CLI v0.148.2 (extended version)
+2. Checks out code with submodules  
+3. Caches Hugo modules in `/tmp/hugo_cache`
+4. Builds site with `hugo --minify --baseURL`
 5. Deploys to GitHub Pages
+
+**Note**: The `public/` directory is auto-generated and should not be committed to the repository.
 
 ## Theme Customization
 
