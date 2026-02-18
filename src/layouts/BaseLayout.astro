@@ -36,6 +36,8 @@ const clashDisplayUrl =
   </head>
   <body class="noise-overlay min-h-screen">
     <div class="grid-bg" aria-hidden="true"></div>
+    {/* Ambient glow - visible on all pages */}
+    <div class="hero-glow opacity-60 mix-blend-screen" aria-hidden="true"></div>
     {showRunners && <GridRunners />}
     <div class="vignette" aria-hidden="true"></div>
     <div style="position: relative; z-index: 10;">

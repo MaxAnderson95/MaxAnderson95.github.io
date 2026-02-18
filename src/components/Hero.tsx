@@ -16,9 +16,6 @@ interface Props {
 export default function Hero({ name, bio, socials, roles }: Props) {
   return (
     <section className="relative overflow-hidden min-h-[90vh] flex items-center">
-      {/* Ambient glow */}
-      <div className="hero-glow opacity-60 mix-blend-screen" />
-
       <div className="relative z-10 max-w-[1100px] mx-auto px-6 md:px-10 w-full pt-32 pb-20 md:pt-40 md:pb-32">
         <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-12 md:gap-24">
           {/* ===== Left column — text ===== */}
@@ -26,11 +23,11 @@ export default function Hero({ name, bio, socials, roles }: Props) {
             {/* Greeting + Name */}
             <div className="reveal" style={{ animationDelay: "0.15s" }}>
               <h1 className="font-display font-bold tracking-tight leading-[1.1] text-[clamp(3.5rem,7vw,5.5rem)] pb-2">
-                <span className="text-text bg-gradient-to-b from-white to-white/60 bg-clip-text text-transparent">
-                  Hey, I'm {name.split(" ")[0]}
-                </span>
-                <span className="inline-block animate-[wave_2.5s_ease-in-out_infinite] origin-[70%_70%] ml-4 text-white align-baseline">
-                  👋
+                <span className="text-text">
+                  Hey, I'm <span className="text-accent inline-block">{name.split(" ")[0]}</span>
+                  <span className="inline-block animate-[wave_2.5s_ease-in-out_infinite] origin-[70%_70%] ml-4 text-white align-baseline">
+                    👋
+                  </span>
                 </span>
               </h1>
             </div>
@@ -41,7 +38,6 @@ export default function Hero({ name, bio, socials, roles }: Props) {
               style={{ animationDelay: "0.35s" }}
             >
               <div className="text-[clamp(1.2rem,3vw,1.75rem)] font-body font-light text-accent min-h-[1.4em] flex items-center gap-3">
-                <span className="w-8 h-[1px] bg-accent/50 inline-block"></span>
                 <TypeIt
                   options={{
                     speed: 50,
@@ -50,7 +46,8 @@ export default function Hero({ name, bio, socials, roles }: Props) {
                     loop: true,
                     waitUntilVisible: true,
                     lifeLike: true,
-                    cursor: false,
+                    cursor: true,
+                    cursorChar: "_",
                   }}
                   getBeforeInit={(instance) => {
                     roles.forEach((role, i) => {
@@ -62,7 +59,6 @@ export default function Hero({ name, bio, socials, roles }: Props) {
                     return instance;
                   }}
                 />
-                <span className="animate-pulse text-accent">_</span>
               </div>
             </div>
 
@@ -84,7 +80,7 @@ export default function Hero({ name, bio, socials, roles }: Props) {
               {/* Primary CTA */}
               <a
                 href="/blog/"
-                className="group relative inline-flex items-center gap-3 px-7 py-3.5 rounded-full bg-white text-bg font-semibold text-[15px] transition-all duration-300 hover:scale-[1.03] overflow-hidden"
+                className="group relative inline-flex items-center gap-3 px-7 py-3.5 rounded-full bg-accent text-white font-semibold text-[15px] transition-all duration-300 hover:scale-[1.03] overflow-hidden shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)]"
               >
                 <span className="relative z-10">Read my blog</span>
                 <svg
@@ -99,7 +95,7 @@ export default function Hero({ name, bio, socials, roles }: Props) {
                   <path d="M5 12h14" />
                   <path d="m12 5 7 7-7 7" />
                 </svg>
-                <div className="absolute inset-0 bg-gradient-to-r from-white via-gray-200 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300 mix-blend-overlay"></div>
               </a>
             </div>
           </div>
@@ -141,15 +137,6 @@ export default function Hero({ name, bio, socials, roles }: Props) {
                 
                 <div className="absolute bottom-4 right-4 w-12 h-[1px] bg-accent/60"></div>
                 <div className="absolute bottom-4 right-4 h-12 w-[1px] bg-accent/60"></div>
-
-                {/* Status indicator */}
-                <div className="absolute bottom-6 left-6 flex items-center gap-3 backdrop-blur-md bg-black/30 px-3 py-1.5 rounded-full border border-white/10">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-                  </span>
-                  <span className="text-[11px] font-mono text-white/80 tracking-wide uppercase">Online</span>
-                </div>
               </div>
             </div>
           </div>
