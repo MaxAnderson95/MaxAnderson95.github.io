@@ -1,0 +1,29 @@
+---
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  return posts.map((post: any) => ({
+    params: { slug: post.id },
+    props: { slug: post.id },
+  }));
+}
+
+const { slug } = Astro.props;
+const target = `/blog/${slug}/`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0;url=${target}`} />
+    <link rel="canonical" href={target} />
+    <meta name="robots" content="noindex" />
+    <script is:inline>{`window.location.replace("${target}");`}</script>
+    <title>Redirecting...</title>
+  </head>
+  <body>
+    <p>Redirecting to <a href={target}>{target}</a>.</p>
+  </body>
+</html>

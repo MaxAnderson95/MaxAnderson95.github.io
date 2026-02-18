@@ -1,0 +1,74 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Navbar from "../components/Navbar";
+import Hero from "../components/Hero";
+import BlogCard from "../components/BlogCard";
+import Footer from "../components/Footer";
+import { siteData } from "../data/site";
+import { getCollection } from "astro:content";
+import { formatDateShort, sortPostsByDate } from "../lib/utils";
+
+const allPosts = await getCollection("blog");
+const posts = sortPostsByDate(
+  (import.meta.env.DEV ? allPosts : allPosts.filter((post: any) => !post.data.draft)) as any
+).slice(0, 3);
+---
+
+<BaseLayout showRunners>
+  <Navbar active="home" client:idle />
+
+  <Hero
+    client:idle
+    name={siteData.name}
+    bio={siteData.bio}
+    socials={siteData.socials}
+    roles={[
+      "DevOps Engineer",
+      "Cloud Engineer",
+      "Systems & Network Engineer",
+    ]}
+  />
+
+  <!-- Recent Posts Section -->
+  <section class="relative z-10 max-w-[1100px] mx-auto px-6 md:px-10 pb-20">
+    <div class="reveal flex items-center justify-between mb-8" style="animation-delay: 0.9s;">
+      <h2 class="font-display font-bold text-2xl text-text">Recent Posts</h2>
+      <a
+        href="/blog/"
+        class="text-[13px] text-text-muted hover:text-accent transition-colors font-mono"
+      >
+        View all &rarr;
+      </a>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {posts.map((post: any, i: number) => (
+        <BlogCard
+          client:idle
+          slug={post.id}
+          title={post.data.title}
+          date={formatDateShort(post.data.date)}
+          readTime={post.data.readTime}
+          tags={post.data.tags}
+          excerpt={post.data.excerpt}
+          index={i}
+        />
+      ))}
+    </div>
+  </section>
+
+  <Footer client:idle />
+</BaseLayout>
+
+<style>
+  @keyframes wave {
+    0% { transform: rotate(0deg); }
+    10% { transform: rotate(14deg); }
+    20% { transform: rotate(-8deg); }
+    30% { transform: rotate(14deg); }
+    40% { transform: rotate(-4deg); }
+    50% { transform: rotate(10deg); }
+    60% { transform: rotate(0deg); }
+    100% { transform: rotate(0deg); }
+  }
+</style>

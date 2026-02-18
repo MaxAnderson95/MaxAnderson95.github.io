@@ -1,0 +1,53 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
+import { getCollection } from "astro:content";
+
+const allPosts = await getCollection("blog");
+const posts = import.meta.env.DEV
+  ? allPosts
+  : allPosts.filter((post: any) => !post.data.draft);
+
+function slugifyTag(tag: string): string {
+  return tag
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+}
+
+const tagCounts = new Map<string, number>();
+for (const post of posts as any[]) {
+  for (const tag of post.data.tags) {
+    tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+  }
+}
+
+const tags = [...tagCounts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+---
+
+<BaseLayout title="Tags — Max Anderson">
+  <Navbar active="blog" client:idle />
+
+  <main class="relative z-10 max-w-[1100px] mx-auto px-6 md:px-10 pt-28 pb-20">
+    <div class="reveal mb-10" style="animation-delay: 0.15s;">
+      <h1 class="font-display font-extrabold text-[clamp(2rem,5vw,3rem)] tracking-tight leading-tight text-text">
+        Tags
+      </h1>
+      <p class="text-text-secondary text-[17px] mt-3 max-w-xl">
+        Browse posts by topic.
+      </p>
+    </div>
+
+    <div class="reveal flex flex-wrap gap-3" style="animation-delay: 0.25s;">
+      {tags.map(([tag, count]) => (
+        <a class="tag" href={`/tags/${slugifyTag(tag)}/`}>
+          {tag} ({count})
+        </a>
+      ))}
+    </div>
+  </main>
+
+  <Footer client:idle />
+</BaseLayout>
