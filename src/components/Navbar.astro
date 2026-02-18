@@ -8,7 +8,7 @@ interface Props {
 
 <nav
   id="navbar"
-  class="fixed top-0 left-0 right-0 z-50 flex justify-center py-6 pointer-events-none transition-all duration-500"
+  class="fixed top-0 left-0 right-0 z-50 flex justify-center py-6 pointer-events-none transition-all duration-500 border-b border-transparent"
 >
   <div
     id="nav-container"
@@ -134,7 +134,8 @@ interface Props {
       if (scrolled) {
         // Navbar container becomes the backdrop
         navbar.classList.remove("py-6", "pointer-events-none");
-        navbar.classList.add("py-4", "bg-black/40", "backdrop-blur-md", "border-b", "border-white/5");
+        navbar.classList.add("py-4", "bg-black/40", "backdrop-blur-md", "border-white/5");
+        navbar.classList.remove("border-transparent");
         
         // Inner container loses its glass styles
         navContainer.classList.remove("glass-panel", "shadow-2xl", "shadow-black/50", "border-border-highlight/50", "px-2", "py-2");
@@ -150,7 +151,8 @@ interface Props {
       } else {
         // Reset to initial state
         navbar.classList.add("py-6", "pointer-events-none");
-        navbar.classList.remove("py-4", "bg-black/40", "backdrop-blur-md", "border-b", "border-white/5");
+        navbar.classList.remove("py-4", "bg-black/40", "backdrop-blur-md", "border-white/5");
+        navbar.classList.add("border-transparent");
         
         navContainer.classList.add("glass-panel", "shadow-2xl", "shadow-black/50", "border-border-highlight/50", "px-2", "py-2");
         navContainer.classList.remove("bg-transparent", "border-transparent", "shadow-none");

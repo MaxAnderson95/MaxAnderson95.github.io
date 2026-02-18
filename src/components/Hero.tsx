@@ -15,20 +15,18 @@ interface Props {
 
 export default function Hero({ name, bio, socials, roles }: Props) {
   return (
-    <section className="relative overflow-hidden min-h-[90vh] flex items-center">
-      <div className="relative z-10 max-w-[1100px] mx-auto px-6 md:px-10 w-full pt-32 pb-20 md:pt-40 md:pb-32">
+    <section className="relative overflow-hidden flex-1 flex items-center">
+      <div className="relative z-10 max-w-[1100px] mx-auto px-6 md:px-10 w-full pt-32 pb-12 md:pt-40 md:pb-20">
         <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-12 md:gap-24">
           {/* ===== Left column — text ===== */}
           <div className="flex-1 min-w-0">
             {/* Greeting + Name */}
-            <div className="reveal" style={{ animationDelay: "0.15s" }}>
-              <h1 className="font-display font-bold tracking-tight leading-[1.1] text-[clamp(3.5rem,7vw,5.5rem)] pb-2">
-                <span className="text-text block">Hey, I'm</span>
-                <span className="whitespace-nowrap">
-                  <span className="text-accent">{name.split(" ")[0]}</span>
-                  <span className="inline-block animate-[wave_2.5s_ease-in-out_infinite] origin-[70%_70%] ml-4 text-white align-baseline">
-                    👋
-                  </span>
+             <div className="reveal" style={{ animationDelay: "0.15s" }}>
+              <h1 className="font-display font-bold tracking-tight leading-[1.1] text-[clamp(3.5rem,7vw,5.5rem)] pb-2 whitespace-nowrap">
+                <span className="text-text">Hey, I'm </span>
+                <span className="text-accent">{name.split(" ")[0]}</span>
+                <span className="inline-block animate-[wave_2.5s_ease-in-out_infinite] origin-[70%_70%] ml-4 text-white align-baseline">
+                  👋
                 </span>
               </h1>
             </div>
@@ -81,7 +79,7 @@ export default function Hero({ name, bio, socials, roles }: Props) {
               {/* Primary CTA */}
               <a
                 href="/blog/"
-                className="group relative inline-flex items-center gap-3 px-7 py-3.5 rounded-full bg-accent text-white font-semibold text-[15px] transition-all duration-300 hover:scale-[1.03] overflow-hidden shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)]"
+                className="group relative inline-flex items-center gap-3 px-7 py-3.5 rounded-full bg-accent text-white font-semibold text-[15px] transition-all duration-300 hover:scale-[1.03] overflow-hidden shadow-[0_0_20px_rgba(255,107,0,0.4)] hover:shadow-[0_0_30px_rgba(255,107,0,0.6)]"
               >
                 <span className="relative z-10">Read my blog</span>
                 <svg
