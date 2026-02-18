@@ -23,13 +23,11 @@ export default function Hero({ name, bio, socials, roles }: Props) {
             {/* Greeting + Name */}
             <div className="reveal" style={{ animationDelay: "0.15s" }}>
               <h1 className="font-display font-bold tracking-tight leading-[1.1] text-[clamp(3.5rem,7vw,5.5rem)] pb-2">
-                <span className="text-text">
-                  Hey, I'm{" "}
-                  <span className="whitespace-nowrap">
-                    <span className="text-accent">{name.split(" ")[0]}</span>
-                    <span className="inline-block animate-[wave_2.5s_ease-in-out_infinite] origin-[70%_70%] ml-4 text-white align-baseline">
-                      👋
-                    </span>
+                <span className="text-text block">Hey, I'm</span>
+                <span className="whitespace-nowrap">
+                  <span className="text-accent">{name.split(" ")[0]}</span>
+                  <span className="inline-block animate-[wave_2.5s_ease-in-out_infinite] origin-[70%_70%] ml-4 text-white align-baseline">
+                    👋
                   </span>
                 </span>
               </h1>
