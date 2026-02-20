@@ -1,0 +1,81 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Navbar from "../../components/Navbar.astro";
+import CertCard from "../../components/CertCard";
+import Footer from "../../components/Footer";
+import { certifications } from "../../data/certifications";
+import type { Certification } from "../../data/certifications";
+
+// Resolve simple-icons SVG paths at build time so the library is never shipped to the client
+import * as simpleIcons from "simple-icons";
+
+interface ResolvedCert {
+  name: string;
+  issuer: string;
+  issuerColor: string;
+  iconPath?: string;
+  customIconMarkup?: string;
+  achievedDate: string;
+  validUntil: string | null;
+  url?: string;
+}
+
+const allIcons = Object.values(simpleIcons) as Array<{ slug: string; path: string }>;
+
+const resolvedCerts: ResolvedCert[] = certifications.map((cert: Certification) => {
+  let iconPath: string | undefined;
+  let customIconMarkup: string | undefined;
+
+  if (cert.simpleIconSlug) {
+    const icon = allIcons.find((i) => i.slug === cert.simpleIconSlug);
+    iconPath = icon?.path ?? "";
+  } else if (cert.customIconSvg) {
+    customIconMarkup = cert.customIconSvg;
+  }
+
+  return {
+    name: cert.name,
+    issuer: cert.issuer,
+    issuerColor: cert.issuerColor,
+    iconPath,
+    customIconMarkup,
+    achievedDate: cert.achievedDate,
+    validUntil: cert.validUntil,
+    url: cert.url,
+  };
+});
+---
+
+<BaseLayout title="Certifications — Max Anderson">
+  <Navbar active="certifications" />
+
+  <main class="relative z-10 max-w-[1100px] mx-auto px-6 md:px-10 pt-28 pb-20">
+    {/* Header */}
+    <div class="reveal mb-12" style="animation-delay: 0.15s;">
+      <h1 class="font-display font-extrabold text-[clamp(2rem,5vw,3rem)] tracking-tight leading-tight text-text">
+        Certifications
+      </h1>
+
+    </div>
+
+    {/* Certs Grid */}
+    <div class="grid gap-4 md:grid-cols-2">
+      {resolvedCerts.map((cert, i) => (
+        <CertCard
+          client:idle
+          name={cert.name}
+          issuer={cert.issuer}
+          issuerColor={cert.issuerColor}
+          iconPath={cert.iconPath}
+          customIconMarkup={cert.customIconMarkup}
+          achievedDate={cert.achievedDate}
+          validUntil={cert.validUntil}
+          url={cert.url}
+          index={i}
+        />
+      ))}
+    </div>
+  </main>
+
+  <Footer client:idle />
+</BaseLayout>
