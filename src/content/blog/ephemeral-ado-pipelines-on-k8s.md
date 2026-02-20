@@ -226,9 +226,10 @@ Next we prepare our Kubernetes environment to run our custom agent container.
 
     Give the token at minimum the "Read & manage" permission on "Agent Pools".
 
-    > **Warning!** Take caution with what permissions you give this PAT. All jobs that run on this agent will be able to read this token, so you shouldn't give it any additional access than what is required.
->
-> Each job that runs gets a separate [job access token](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/access-tokens?view=azure-devops&tabs=yaml) which is used to clone repos, add git tags, upload artifacts, etc. The token we've generated here is stricly for the agent to register itself and pick up new jobs.
+    > [!WARNING]
+    > Take caution with what permissions you give this PAT. All jobs that run on this agent will be able to read this token, so you shouldn't give it any additional access than what is required.
+    >
+    > Each job that runs gets a separate [job access token](https://learn.microsoft.com/en-us/azure/devops/pipelines/process/access-tokens?view=azure-devops&tabs=yaml) which is used to clone repos, add git tags, upload artifacts, etc. The token we've generated here is stricly for the agent to register itself and pick up new jobs.
 
 1. Create a namespace to deploy our Kubernetes resources to:
 
@@ -291,9 +292,10 @@ Next we prepare our Kubernetes environment to run our custom agent container.
         verbs: ["get", "patch"]
     ```
 
-    > **Warning!** Take caution with what permissions you give this roll. All jobs that run on this agent will inherit these permissions within the Kubernetes cluster. The permissions here are the bare-minimum required.
->
-> Also a reminder that a `Role` only applies to the namespace that it was created in. This is as opposed to a `ClusterRole` which applies cluster-wide.
+    > [!WARNING]
+    > Take caution with what permissions you give this roll. All jobs that run on this agent will inherit these permissions within the Kubernetes cluster. The permissions here are the bare-minimum required.
+    >
+    > Also a reminder that a `Role` only applies to the namespace that it was created in. This is as opposed to a `ClusterRole` which applies cluster-wide.
 
     Finally a `RoleBinding` that binds the `ServiceAccount` to the `Role`:
 

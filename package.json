@@ -17,6 +17,7 @@
     "astro": "^5.17.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "remark-github-blockquote-alert": "^2.0.1",
     "tailwindcss": "^4.1.18",
     "typeit-react": "^2.7.8"
   }

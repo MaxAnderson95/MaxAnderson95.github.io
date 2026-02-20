@@ -198,7 +198,8 @@ spec:
     app: pihole
 ```
 
-> **Note** the `clusterIP` of `None`. This is what designates it as a headless service. When performing a DNS lookup for `pihole`, the cluster DNS service will instead just return the IP addresses of all pods in the stateful set. This also gives us the ability to single out a specific pod by name by querying for `{Pod Name}.{StatefulSet Name}.{Namespace}.svc.cluster.local`. This will come in handy later.
+> [!NOTE]
+> The `clusterIP` of `None`. This is what designates it as a headless service. When performing a DNS lookup for `pihole`, the cluster DNS service will instead just return the IP addresses of all pods in the stateful set. This also gives us the ability to single out a specific pod by name by querying for `{Pod Name}.{StatefulSet Name}.{Namespace}.svc.cluster.local`. This will come in handy later.
 
 #### Web Service
 
@@ -266,7 +267,8 @@ spec:
 
 The reason the services need to be defined separately is because services of type `LoadBalancer` only expose the first port listed, with all others being truncated. This creates a new problem in that by default, they will get different external IP addresses. For MetalLB, we can solve this by setting an annotation on each service with the same "sharing key". This tells the MetalLB controller that these services can use the same external IP address.
 
-> **Note** DNS by default runs on UDP, but requires TCP for zone transfers and transmition of data larger than 512 bytes. It's best practice to expose both to your clients.
+> [!NOTE]
+> DNS by default runs on UDP, but requires TCP for zone transfers and transmition of data larger than 512 bytes. It's best practice to expose both to your clients.
 
 Once applied we can see this external IP sharing in action:
 

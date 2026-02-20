@@ -58,7 +58,7 @@ Here is a high-level diagram, with GitHub Actions as the ***workload***, GitHub 
 
 ![GitHub Actions to Azure Container Registry Workload Identity Federation Example](/img/blog/workload-identity-federation-part-1/GHA-Example.png)
 
-> **Important**
+> [!IMPORTANT]
 >
 > You might be curious as to how the Actions Workflow is able to request an ID token from GitHub in the first place. Each Workload/IDP combination has a unique way of doing this, but in all cases, there is ***implicit trust*** between the workload and the IDP, which is managed and secured by the platform itself.
 >

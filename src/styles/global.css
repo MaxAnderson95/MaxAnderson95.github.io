@@ -613,3 +613,83 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
 }
+
+/* ===== GitHub-style Alerts ===== */
+.prose .markdown-alert {
+  border-left: 3px solid var(--color-border);
+  padding: 1.25rem 1.5rem;
+  margin: 2.5em 0;
+  border-radius: 0 12px 12px 0;
+  background: var(--color-surface); /* Solid background, no fade */
+}
+
+.prose .markdown-alert > :first-child {
+  margin-top: 0;
+}
+
+.prose .markdown-alert > :last-child {
+  margin-bottom: 0;
+}
+
+.prose .markdown-alert .markdown-alert-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.02em;
+  color: var(--color-text);
+}
+
+.prose .markdown-alert .markdown-alert-title svg {
+  fill: currentColor;
+}
+
+/* Colors for different alert types */
+.prose .markdown-alert.markdown-alert-note {
+  border-left-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.08);
+}
+.prose .markdown-alert.markdown-alert-note .markdown-alert-title {
+  color: #60a5fa;
+}
+
+.prose .markdown-alert.markdown-alert-tip {
+  border-left-color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+}
+.prose .markdown-alert.markdown-alert-tip .markdown-alert-title {
+  color: #34d399;
+}
+
+.prose .markdown-alert.markdown-alert-important {
+  border-left-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.08);
+}
+.prose .markdown-alert.markdown-alert-important .markdown-alert-title {
+  color: #a78bfa;
+}
+
+.prose .markdown-alert.markdown-alert-warning {
+  border-left-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
+.prose .markdown-alert.markdown-alert-warning .markdown-alert-title {
+  color: #fbbf24;
+}
+
+.prose .markdown-alert.markdown-alert-caution {
+  border-left-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+.prose .markdown-alert.markdown-alert-caution .markdown-alert-title {
+  color: #f87171;
+}
+
+.prose .markdown-alert p {
+  font-style: normal;
+  font-weight: 300;
+  color: var(--color-text-secondary);
+}
