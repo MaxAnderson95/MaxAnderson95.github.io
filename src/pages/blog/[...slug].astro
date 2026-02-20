@@ -26,14 +26,14 @@ const { Content } = await render(post);
 >
   <Navbar active="blog" />
 
-  <main class="relative z-10 max-w-[1100px] w-full mx-auto px-6 md:px-10 pt-28 pb-20 overflow-x-hidden">
+  <main id="main-content" class="relative z-10 max-w-[1100px] w-full mx-auto px-6 md:px-10 pt-28 pb-20 overflow-x-hidden">
     <article>
       {/* Header */}
       <header class="reveal mb-12 max-w-3xl" style="animation-delay: 0.15s;">
         {/* Back link */}
         <a
           href="/blog/"
-          class="group inline-flex items-center gap-2 text-[13px] text-text-muted hover:text-accent transition-colors mb-8"
+          class="group inline-flex items-center gap-2 text-[0.8125rem] text-text-muted hover:text-accent transition-colors mb-8"
         >
           <svg
             class="w-4 h-4 transition-transform duration-200 group-hover:-translate-x-0.5"
@@ -43,6 +43,7 @@ const { Content } = await render(post);
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
+            aria-hidden="true"
           >
             <path d="m15 18-6-6 6-6" />
           </svg>
@@ -55,11 +56,11 @@ const { Content } = await render(post);
         </h1>
 
         {/* Meta */}
-        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px]">
-          <span class="text-accent font-mono">{formatDate(post.data.date)}</span>
-          <span class="text-border-subtle">|</span>
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-[0.8125rem]">
+          <time datetime={post.data.date.toISOString()} class="text-accent font-mono">{formatDate(post.data.date)}</time>
+          <span class="text-border-subtle" aria-hidden="true">|</span>
           <span class="text-text-muted font-mono">{post.data.readTime}</span>
-          <span class="text-border-subtle">|</span>
+          <span class="text-border-subtle" aria-hidden="true">|</span>
           <div class="flex flex-wrap gap-1.5">
             {post.data.tags.map((tag: string) => (
               <a class="tag" href={`/tags/${slugifyTag(tag)}/`}>{tag}</a>
@@ -73,7 +74,7 @@ const { Content } = await render(post);
         {post.data.featureImage && (
           <img
             src={post.data.featureImage}
-            alt={`${post.data.title} feature image`}
+            alt={post.data.featureImageAlt || ""}
             class="mt-8 w-full rounded-2xl border border-border object-cover shadow-[0_10px_40px_rgba(0,0,0,0.45)]"
             loading="eager"
           />
@@ -89,9 +90,9 @@ const { Content } = await render(post);
       <footer class="reveal mt-16 pt-8 border-t border-border-subtle max-w-3xl" style="animation-delay: 0.4s;">
         <a
           href="/blog/"
-          class="group inline-flex items-center gap-2.5 text-[13px] text-text-secondary hover:text-accent transition-all duration-200"
+          class="group inline-flex items-center gap-2.5 text-[0.8125rem] text-text-secondary hover:text-accent transition-all duration-200"
         >
-          <span class="inline-flex items-center justify-center w-7 h-7 rounded-md border border-border-subtle group-hover:border-accent/30 transition-colors">
+          <span class="inline-flex items-center justify-center w-7 h-7 rounded-md border border-border-subtle group-hover:border-accent/30 transition-colors" aria-hidden="true">
             <svg
               class="w-3.5 h-3.5"
               viewBox="0 0 24 24"

@@ -51,7 +51,11 @@ export default function Hero({ name, bio, roles }: Props) {
               <h1 className="font-display font-bold tracking-tight leading-[1.1] text-[2.5rem] md:text-[clamp(3.5rem,7vw,5.5rem)] pb-2 md:whitespace-nowrap">
                 <span className="text-text">Hey, I'm </span>
                 <span className="text-accent">{name.split(" ")[0]}</span>
-                <span className="inline-block animate-[wave_2.5s_ease-in-out_infinite] origin-[70%_70%] ml-2 md:ml-4 text-white align-baseline">
+                <span
+                  className="inline-block animate-[wave_2.5s_ease-in-out_infinite] origin-[70%_70%] ml-2 md:ml-4 text-white align-baseline"
+                  role="img"
+                  aria-label="waving hand"
+                >
                   👋
                 </span>
               </h1>
@@ -62,7 +66,8 @@ export default function Hero({ name, bio, roles }: Props) {
               className="reveal mt-4 pl-1"
               style={{ animationDelay: "0.35s" }}
             >
-              <div className="text-[clamp(1.2rem,3vw,1.75rem)] font-body font-light text-accent min-h-[1.4em] flex items-center gap-3">
+              <span className="sr-only">{roles.join(", ")}</span>
+              <div aria-hidden="true" className="text-[clamp(1.2rem,3vw,1.75rem)] font-body font-light text-accent min-h-[1.4em] flex items-center gap-3">
                 <TypeIt
                   options={{
                     speed: 50,
@@ -115,7 +120,7 @@ export default function Hero({ name, bio, roles }: Props) {
               className="reveal mt-10 max-w-lg pl-1"
               style={{ animationDelay: "0.55s" }}
             >
-              <p className="text-text-secondary text-[17px] leading-relaxed font-light">
+              <p className="text-text-secondary text-[1.0625rem] leading-relaxed font-light">
                 {bio}
               </p>
             </div>
@@ -128,7 +133,7 @@ export default function Hero({ name, bio, roles }: Props) {
               {/* Primary CTA */}
               <a
                 href="/blog/"
-                className="group relative inline-flex items-center gap-3 px-7 py-3.5 rounded-full bg-accent text-white font-semibold text-[15px] transition-all duration-300 hover:scale-[1.03] overflow-hidden shadow-[0_0_20px_rgba(255,107,0,0.4)] hover:shadow-[0_0_30px_rgba(255,107,0,0.6)]"
+                className="group relative inline-flex items-center gap-3 px-7 py-3.5 rounded-full bg-accent text-white font-semibold text-[0.9375rem] transition-all duration-300 hover:scale-[1.03] overflow-hidden shadow-[0_0_20px_rgba(255,107,0,0.4)] hover:shadow-[0_0_30px_rgba(255,107,0,0.6)]"
               >
                 <span className="relative z-10">Read my blog</span>
                 <svg
@@ -139,6 +144,7 @@ export default function Hero({ name, bio, roles }: Props) {
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  aria-hidden="true"
                 >
                   <path d="M5 12h14" />
                   <path d="m12 5 7 7-7 7" />

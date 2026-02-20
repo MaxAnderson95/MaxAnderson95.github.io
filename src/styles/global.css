@@ -78,6 +78,33 @@
     background: rgba(255, 107, 0, 0.2);
     color: #fff;
   }
+
+  /* ===== Focus styles ===== */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* ===== Skip navigation ===== */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-accent);
+  color: #fff;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.875rem;
+  border-radius: 0 0 0.5rem 0.5rem;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
 }
 
 /* ===== Utility Classes ===== */
@@ -222,7 +249,7 @@
 .tag {
   display: inline-block;
   padding: 3px 10px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-family: var(--font-mono);
   letter-spacing: 0.02em;
   color: var(--color-text-secondary);
@@ -693,8 +720,21 @@
   }
 }
 
-/* === Reduced motion === */
+/* ===== Reduced motion ===== */
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal {
+    animation: none;
+    opacity: 1;
+  }
+
+  .hero-glow {
+    animation: none;
+  }
+
   .timeline-entry {
     opacity: 1;
     transform: none;
@@ -709,5 +749,13 @@
 
   .timeline-entry .animate-ping {
     animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

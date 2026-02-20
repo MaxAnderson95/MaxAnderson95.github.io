@@ -5,6 +5,7 @@ readTime: "10 min read"
 tags: ["Azure DevOps", "Azure Pipelines", "K8s"]
 excerpt: "At my current job, we use Azure DevOps and Azure Pipelines for code repos and CI/CD. For the vast majority of our pipelines, we use Microsoft's hosted agents. They're easy to us..."
 featureImage: "/img/blog/ephemeral-ado-pipelines-on-k8s/feature.png"
+featureImageAlt: "Azure DevOps pipeline running on an ephemeral Kubernetes agent pod"
 ---
 
 ## Table of Contents
@@ -220,7 +221,7 @@ Next we prepare our Kubernetes environment to run our custom agent container.
 
 1. First we need to generate an Azure DevOps personal access token (PAT) so that our agents can authenticate to ADO. This can be done by clicking the user settings button, and choosing "Personal access tokens":
 
-    <img src="/img/blog/ephemeral-ado-pipelines-on-k8s/pat.png" width="300px" />
+    <img src="/img/blog/ephemeral-ado-pipelines-on-k8s/pat.png" width="300" alt="Azure DevOps user settings menu showing the Personal access tokens option" />
 
     Give the token at minimum the "Read & manage" permission on "Agent Pools".
 
@@ -425,7 +426,7 @@ This `CronJob` does the following:
 Let's test this out!
 
 Here, we see our three agents running in Kubernetes:
-![pods running before](/img/blog/ephemeral-ado-pipelines-on-k8s/pods-before.png)
+![Kubernetes terminal output showing three Azure Pipelines agent pods running before pipeline execution](/img/blog/ephemeral-ado-pipelines-on-k8s/pods-before.png)
 
 We'll create a basic Azure Pipeline and use the pool that we specified in the `AZP_POOL` environment variable to ensure it targets our K8s agents.
 
@@ -442,13 +443,13 @@ steps:
 ```
 
 Based on our job log, we can see agent `azp-agent-75f7f6b597-xfxdr` picked up the job and ran it successfully.
-![job log](/img/blog/ephemeral-ado-pipelines-on-k8s/job.png)
+![Azure DevOps pipeline job log showing successful execution on a Kubernetes-hosted agent](/img/blog/ephemeral-ado-pipelines-on-k8s/job.png)
 
 Now back in K8s, that agent is gone, and a new one has been created to replace it automatically (notice the difference in pod age).
-![pods after running](/img/blog/ephemeral-ado-pipelines-on-k8s/pods-after.png)
+![Kubernetes terminal output showing the original agent pod terminated and a new replacement pod created](/img/blog/ephemeral-ado-pipelines-on-k8s/pods-after.png)
 
 And if we check in Azure DevOps, the agent that ran our job (`azp-agent-75f7f6b597-xfxdr`) has been cleanly removed from the pool, with the new one already registered and ready to accept new jobs.
-![list of agents after](/img/blog/ephemeral-ado-pipelines-on-k8s/agents-after.png)
+![Azure DevOps agent pool showing the old agent removed and a new agent registered and online](/img/blog/ephemeral-ado-pipelines-on-k8s/agents-after.png)
 
 ## Conclusion
 
