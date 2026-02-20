@@ -1,3 +1,5 @@
+import { slugifyTag } from "../lib/utils";
+
 interface Props {
   slug: string;
   title: string;
@@ -23,9 +25,8 @@ export default function BlogCard({
   const delay = `${0.1 + index * 0.1}s`;
 
   return (
-    <a
-      href={`/blog/${slug}/`}
-      className="group relative block w-full h-full p-8 rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] border border-white/5 hover:border-white/10 bg-surface/40 backdrop-blur-md"
+    <article
+      className="group relative block w-full h-full p-8 rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] border border-white/5 hover:border-white/10 bg-surface/40 backdrop-blur-md cursor-pointer"
       style={{ animationDelay: delay }}
     >
       {/* Hover Gradient Bloom */}
@@ -56,7 +57,9 @@ export default function BlogCard({
 
           {/* Title */}
           <h3 className="text-xl md:text-2xl font-display font-semibold text-text leading-tight group-hover:text-white transition-colors duration-300 mb-3">
-            {title}
+            <a href={`/blog/${slug}/`} className="after:absolute after:inset-0 after:content-['']">
+              {title}
+            </a>
           </h3>
 
           {/* Excerpt (optional) */}
@@ -71,12 +74,13 @@ export default function BlogCard({
         <div className="flex items-center justify-between mt-auto pt-6 border-t border-white/5">
           <div className="flex flex-wrap gap-2">
             {tags.slice(0, 3).map((tag) => (
-              <span 
-                key={tag} 
-                className="px-2.5 py-1 text-[11px] font-mono text-text-secondary bg-white/5 rounded-md border border-white/5 group-hover:border-white/10 transition-colors"
+              <a
+                key={tag}
+                href={`/tags/${slugifyTag(tag)}/`}
+                className="relative z-10 px-2.5 py-1 text-[11px] font-mono text-text-secondary bg-white/5 rounded-md border border-white/5 hover:border-accent/30 hover:text-accent-light transition-colors"
               >
-                #{tag}
-              </span>
+                {tag}
+              </a>
             ))}
           </div>
           
@@ -97,6 +101,6 @@ export default function BlogCard({
           </div>
         </div>
       </div>
-    </a>
+    </article>
   );
 }

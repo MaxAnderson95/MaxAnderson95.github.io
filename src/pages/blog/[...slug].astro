@@ -3,7 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer";
 import { getCollection, render, type CollectionEntry } from "astro:content";
-import { formatDate, getVisiblePosts } from "../../lib/utils";
+import { formatDate, getVisiblePosts, slugifyTag } from "../../lib/utils";
 
 export async function getStaticPaths() {
   const allPosts = await getCollection("blog");
@@ -62,7 +62,7 @@ const { Content } = await render(post);
           <span class="text-border-subtle">|</span>
           <div class="flex flex-wrap gap-1.5">
             {post.data.tags.map((tag: string) => (
-              <span class="tag">{tag}</span>
+              <a class="tag" href={`/tags/${slugifyTag(tag)}/`}>{tag}</a>
             ))}
           </div>
         </div>
