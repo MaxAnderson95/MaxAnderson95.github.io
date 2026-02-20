@@ -1,0 +1,67 @@
+---
+import GridRunners from "../components/GridRunners.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  showRunners?: boolean;
+}
+
+const {
+  title = "Max Anderson — DevOps Engineer",
+  description = "Sr. Systems Engineer specializing in DevOps, Cloud Infrastructure, and Automation.",
+  image,
+  showRunners = false,
+} = Astro.props;
+
+const googleFontUrl =
+  "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap";
+
+const siteUrl = Astro.site ?? new URL("https://maxanderson.tech");
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const imageUrl = image ? new URL(image, siteUrl).toString() : undefined;
+
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    {imageUrl && <meta property="og:image" content={imageUrl} />}
+
+    <meta name="twitter:card" content={imageUrl ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {imageUrl && <meta name="twitter:image" content={imageUrl} />}
+
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href={googleFontUrl} rel="stylesheet" />
+  </head>
+  <body class="noise-overlay min-h-screen">
+    <div class="grid-bg" aria-hidden="true"></div>
+    {/* Ambient glow - visible on all pages */}
+    <div class="hero-glow opacity-60 mix-blend-screen" aria-hidden="true"></div>
+    {showRunners && <GridRunners />}
+    <div class="vignette" aria-hidden="true"></div>
+    <div style="position: relative; z-index: 10;" class="flex flex-col min-h-screen">
+      <slot />
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  @import "../styles/global.css";
+</style>

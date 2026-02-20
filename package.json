@@ -1,0 +1,27 @@
+{
+  "name": "maxanderson-website",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/react": "^4.4.2",
+    "@astrojs/sitemap": "^3.7.0",
+    "@tailwindcss/vite": "^4.1.18",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@xt0rted/expressive-code-file-icons": "^1.0.0",
+    "astro": "^5.17.1",
+    "astro-expressive-code": "^0.41.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "remark-github-blockquote-alert": "^2.0.1",
+    "simple-icons": "^16.9.0",
+    "tailwindcss": "^4.1.18",
+    "typeit-react": "^2.7.8"
+  }
+}

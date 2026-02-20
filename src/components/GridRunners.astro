@@ -1,0 +1,215 @@
+---
+// GridRunners — animated "signal" dots that travel along the background gridlines,
+// leaving a glowing orange trail like data packets traversing infrastructure.
+// Pure canvas, zero dependencies, synced with the CSS grid-drift animation.
+---
+
+<canvas id="grid-runners" aria-hidden="true"></canvas>
+
+<style>
+  #grid-runners {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<script>
+  (() => {
+    const canvas = document.getElementById("grid-runners") as HTMLCanvasElement;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Respect reduced-motion preference
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    /* ---- constants (must match CSS grid-bg) ---- */
+    const GRID = 64;
+    const COUNT = 3;
+    // CSS grid-drift moves 64px in 20s → 3.2 px/s
+    const DRIFT_PX_PER_S = GRID / 20;
+
+    let W = 0;
+    let H = 0;
+    let dpr = 1;
+
+    function resize() {
+      dpr = window.devicePixelRatio || 1;
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    /* ---- runner data ---- */
+    interface Runner {
+      horiz: boolean; // true → moves along x
+      pos: number; // position on movement axis (px)
+      crossPos: number; // cross-axis position at spawn
+      spawnDrift: number; // drift value when spawned
+      dir: number; // +1 or -1
+      speed: number; // px / s
+      trail: number; // trail length px
+      intensity: number; // brightness 0.5 – 1
+      born: number; // performance.now() timestamp
+    }
+
+    function spawn(onScreen: boolean): Runner {
+      const now = performance.now();
+      const drift = (now / 1000) * DRIFT_PX_PER_S;
+      const driftMod = ((drift % GRID) + GRID) % GRID;
+
+      const horiz = Math.random() > 0.5;
+      const speed = 80 + Math.random() * 140;
+      const trail = 200 + Math.random() * 250;
+      const dir = Math.random() > 0.5 ? 1 : -1;
+      const intensity = 0.55 + Math.random() * 0.45;
+
+      // pick a grid line that's currently visible
+      const screenSpan = horiz ? H : W;
+      const lines: number[] = [];
+      for (let p = driftMod; p < screenSpan + GRID; p += GRID) lines.push(p);
+      if (driftMod > 0) lines.unshift(driftMod - GRID);
+      const crossPos = lines[Math.floor(Math.random() * lines.length)];
+
+      // start position along movement axis
+      const axisSpan = horiz ? W : H;
+      let pos: number;
+      if (onScreen) {
+        // initial runners start somewhere mid-screen
+        pos = Math.random() * axisSpan;
+      } else {
+        // new runners enter from just off-edge
+        pos =
+          dir > 0
+            ? -(20 + Math.random() * 100)
+            : axisSpan + 20 + Math.random() * 100;
+      }
+
+      return {
+        horiz,
+        pos,
+        crossPos,
+        spawnDrift: drift,
+        dir,
+        speed,
+        trail,
+        intensity,
+        born: now,
+      };
+    }
+
+    const runners: Runner[] = Array.from({ length: COUNT }, () => spawn(true));
+
+    /* ---- draw loop ---- */
+    let prev = performance.now();
+
+    function frame(now: number) {
+      const dt = Math.min((now - prev) / 1000, 0.1);
+      prev = now;
+
+      const drift = (now / 1000) * DRIFT_PX_PER_S;
+
+      ctx!.clearRect(0, 0, W, H);
+
+      for (let i = 0; i < runners.length; i++) {
+        const r = runners[i];
+
+        // advance along movement axis
+        r.pos += r.dir * r.speed * dt;
+
+        // cross-axis tracks the drifting grid line
+        const cross = r.crossPos + (drift - r.spawnDrift);
+
+        // head & tail coordinates
+        const hx = r.horiz ? r.pos : cross;
+        const hy = r.horiz ? cross : r.pos;
+        const tx = r.horiz ? r.pos - r.dir * r.trail : cross;
+        const ty = r.horiz ? cross : r.pos - r.dir * r.trail;
+
+        // gentle fade-in over 0.6 s
+        const age = (now - r.born) / 1000;
+        const fade = Math.min(age / 0.6, 1);
+        const a = fade * r.intensity;
+
+        // ── layer 1: wide soft glow ──
+        const g1 = ctx!.createLinearGradient(tx, ty, hx, hy);
+        g1.addColorStop(0, `rgba(249,115,22,0)`);
+        g1.addColorStop(0.6, `rgba(249,115,22,${(0.03 * a).toFixed(4)})`);
+        g1.addColorStop(0.85, `rgba(249,115,22,${(0.08 * a).toFixed(4)})`);
+        g1.addColorStop(1, `rgba(249,115,22,${(0.15 * a).toFixed(4)})`);
+        ctx!.strokeStyle = g1;
+        ctx!.lineWidth = 12;
+        ctx!.lineCap = "round";
+        ctx!.beginPath();
+        ctx!.moveTo(tx, ty);
+        ctx!.lineTo(hx, hy);
+        ctx!.stroke();
+
+        // ── layer 2: medium glow ──
+        const g2 = ctx!.createLinearGradient(tx, ty, hx, hy);
+        g2.addColorStop(0, `rgba(249,115,22,0)`);
+        g2.addColorStop(0.5, `rgba(249,115,22,${(0.05 * a).toFixed(4)})`);
+        g2.addColorStop(0.8, `rgba(249,115,22,${(0.15 * a).toFixed(4)})`);
+        g2.addColorStop(1, `rgba(249,115,22,${(0.3 * a).toFixed(4)})`);
+        ctx!.strokeStyle = g2;
+        ctx!.lineWidth = 4;
+        ctx!.beginPath();
+        ctx!.moveTo(tx, ty);
+        ctx!.lineTo(hx, hy);
+        ctx!.stroke();
+
+        // ── layer 3: sharp 1 px gridline highlight ──
+        const g3 = ctx!.createLinearGradient(tx, ty, hx, hy);
+        g3.addColorStop(0, `rgba(249,115,22,0)`);
+        g3.addColorStop(0.35, `rgba(249,115,22,${(0.12 * a).toFixed(4)})`);
+        g3.addColorStop(0.75, `rgba(249,115,22,${(0.35 * a).toFixed(4)})`);
+        g3.addColorStop(1, `rgba(249,115,22,${(0.6 * a).toFixed(4)})`);
+        ctx!.strokeStyle = g3;
+        ctx!.lineWidth = 1;
+        ctx!.lineCap = "butt";
+        ctx!.beginPath();
+        ctx!.moveTo(tx, ty);
+        ctx!.lineTo(hx, hy);
+        ctx!.stroke();
+
+        // ── layer 4: head dot with double-pass bloom ──
+        ctx!.save();
+        ctx!.shadowBlur = 30;
+        ctx!.shadowColor = `rgba(249,115,22,${(0.9 * a).toFixed(3)})`;
+        ctx!.fillStyle = `rgba(249,115,22,${(0.95 * a).toFixed(3)})`;
+        ctx!.beginPath();
+        ctx!.arc(hx, hy, 2.5, 0, Math.PI * 2);
+        ctx!.fill();
+        // wider, softer second bloom
+        ctx!.shadowBlur = 55;
+        ctx!.shadowColor = `rgba(249,115,22,${(0.35 * a).toFixed(3)})`;
+        ctx!.fill();
+        ctx!.restore();
+
+        // ── off-screen check ──
+        const axisSpan = r.horiz ? W : H;
+        const gone =
+          r.dir > 0
+            ? r.pos > axisSpan + r.trail + 40
+            : r.pos < -(r.trail + 40);
+        const crossSpan = r.horiz ? H : W;
+        const crossGone =
+          cross < -GRID * 2 || cross > crossSpan + GRID * 2;
+
+        if (gone || crossGone) runners[i] = spawn(false);
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    requestAnimationFrame(frame);
+  })();
+</script>
