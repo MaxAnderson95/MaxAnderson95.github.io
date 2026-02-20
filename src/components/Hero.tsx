@@ -55,10 +55,10 @@ export default function Hero({ name, bio, socials, roles }: Props) {
           <div className="flex-1 min-w-0">
             {/* Greeting + Name */}
              <div className="reveal" style={{ animationDelay: "0.15s" }}>
-              <h1 className="font-display font-bold tracking-tight leading-[1.1] text-[clamp(3.5rem,7vw,5.5rem)] pb-2 whitespace-nowrap">
+              <h1 className="font-display font-bold tracking-tight leading-[1.1] text-[2.5rem] md:text-[clamp(3.5rem,7vw,5.5rem)] pb-2 md:whitespace-nowrap">
                 <span className="text-text">Hey, I'm </span>
                 <span className="text-accent">{name.split(" ")[0]}</span>
-                <span className="inline-block animate-[wave_2.5s_ease-in-out_infinite] origin-[70%_70%] ml-4 text-white align-baseline">
+                <span className="inline-block animate-[wave_2.5s_ease-in-out_infinite] origin-[70%_70%] ml-2 md:ml-4 text-white align-baseline">
                   👋
                 </span>
               </h1>
