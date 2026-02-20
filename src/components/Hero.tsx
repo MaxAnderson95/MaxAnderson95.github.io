@@ -13,7 +13,40 @@ interface Props {
   roles: string[];
 }
 
+interface ParsedRole {
+  role: string;
+  prefix: string;
+  engineer: string;
+  hasEngineerAtEnd: boolean;
+}
+
 export default function Hero({ name, bio, socials, roles }: Props) {
+  const engineerRegex = /\bengineer\b/i;
+  const rolePauseMs = 2000;
+
+  const parsedRoles: ParsedRole[] = roles.map((role) => {
+    const match = role.match(engineerRegex);
+
+    if (!match || typeof match.index !== "number") {
+      return {
+        role,
+        prefix: role,
+        engineer: "",
+        hasEngineerAtEnd: false,
+      };
+    }
+
+    const prefix = role.slice(0, match.index);
+    const suffix = role.slice(match.index + match[0].length);
+
+    return {
+      role,
+      prefix,
+      engineer: match[0],
+      hasEngineerAtEnd: suffix.length === 0,
+    };
+  });
+
   return (
     <section className="relative overflow-hidden flex-1 flex items-center">
       <div className="relative z-10 max-w-[1100px] mx-auto px-6 md:px-10 w-full pt-32 pb-12 md:pt-40 md:pb-20">
@@ -40,7 +73,7 @@ export default function Hero({ name, bio, socials, roles }: Props) {
                 <TypeIt
                   options={{
                     speed: 50,
-                    deleteSpeed: 25,
+                    deleteSpeed: 33,
                     breakLines: false,
                     loop: true,
                     waitUntilVisible: true,
@@ -49,12 +82,35 @@ export default function Hero({ name, bio, socials, roles }: Props) {
                     cursorChar: "_",
                   }}
                   getBeforeInit={(instance) => {
-                    roles.forEach((role, i) => {
-                      instance.type(role).pause(2000).delete(role.length);
-                      if (i < roles.length - 1) {
-                        instance.pause(500);
+                    if (!parsedRoles.length) {
+                      return instance;
+                    }
+
+                    instance.type(parsedRoles[0].role);
+
+                    if (parsedRoles.length === 1) {
+                      instance.pause(rolePauseMs);
+                      return instance;
+                    }
+
+                    parsedRoles.slice(0, -1).forEach((currentRole, index) => {
+                      const nextRole = parsedRoles[index + 1];
+
+                      instance.pause(rolePauseMs);
+
+                      if (currentRole.hasEngineerAtEnd && nextRole.hasEngineerAtEnd) {
+                        instance
+                          .move(-currentRole.engineer.length)
+                          .delete(currentRole.prefix.length)
+                          .type(nextRole.prefix)
+                          .move(null, { to: "END" });
+                      } else {
+                        instance.delete(currentRole.role.length).type(nextRole.role);
                       }
                     });
+
+                    instance.pause(rolePauseMs);
+
                     return instance;
                   }}
                 />
