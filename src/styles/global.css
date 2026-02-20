@@ -102,16 +102,6 @@
   background-size: 64px 64px; /* Matches GRID constant in GridRunners */
   mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
   -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-  animation: grid-drift 20s linear infinite;
-}
-
-@keyframes grid-drift {
-  from {
-    background-position: 0 0, 0 0;
-  }
-  to {
-    background-position: 64px 64px, 64px 64px;
-  }
 }
 
 /* ===== Vignette — organic uneven fade around page edges ===== */
