@@ -81,7 +81,8 @@ data:
   WEBPASSWORD: QWJjMTIzISE= # Abc123!! Base64 encoded
 ```
 
-> **Note:** Make sure that the value for `WEBPASSWORD` is Base64 encoded.
+> [!NOTE]
+> Make sure that the value for `WEBPASSWORD` is Base64 encoded.
 
 ### Creating a StatefulSet to run the Pods
 

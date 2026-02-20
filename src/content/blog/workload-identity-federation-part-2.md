@@ -55,7 +55,8 @@ az aks update \
   --enable-oidc-issuer
 ```
 
-> **Note:** The flag `--enable-oidc-issuer` should not be confused with `--enable-workload-identity`. The latter is an [additional feature](https://azure.github.io/azure-workload-identity/docs/introduction.html) that allows AKS to easily exchange signed service account tokens for Azure AD access tokens. It's a great feature for integrating Kubernetse services with Azure services, but for this guide, we only need the OIDC issuer enabled.
+> [!NOTE]
+> The flag `--enable-oidc-issuer` should not be confused with `--enable-workload-identity`. The latter is an [additional feature](https://azure.github.io/azure-workload-identity/docs/introduction.html) that allows AKS to easily exchange signed service account tokens for Azure AD access tokens. It's a great feature for integrating Kubernetse services with Azure services, but for this guide, we only need the OIDC issuer enabled.
 
 ## ArgoCD Git Authentication Explained
 
