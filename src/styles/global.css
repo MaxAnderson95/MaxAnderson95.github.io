@@ -63,6 +63,7 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
   }
 
   body {
@@ -70,7 +71,7 @@
     background-color: var(--color-bg);
     color: var(--color-text);
     line-height: 1.6;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   ::selection {
@@ -253,8 +254,11 @@
   font-size: 1.125rem;
   line-height: 1.9;
   color: var(--color-text-secondary);
-  max-width: 80ch;
+  max-width: min(80ch, 100%);
   margin: 0 auto;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  overflow-x: hidden;
 }
 
 .prose > :first-child {
@@ -398,6 +402,8 @@
   margin: 2.5em 0;
   box-shadow: 0 8px 30px rgba(0,0,0,0.4);
   border-radius: 0.5rem;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 /* File Icon Styling */
@@ -451,7 +457,8 @@
   font-size: 0.9em;
   border: 1px solid var(--color-border);
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
+  display: block;
 }
 
 .prose th {

@@ -52,11 +52,13 @@ const imageUrl = image ? new URL(image, siteUrl).toString() : undefined;
   </head>
   <body class="noise-overlay min-h-screen">
     <div class="grid-bg" aria-hidden="true"></div>
-    {/* Ambient glow - visible on all pages */}
-    <div class="hero-glow opacity-60 mix-blend-screen" aria-hidden="true"></div>
+    {/* Ambient glow — clipped wrapper prevents mobile horizontal scroll */}
+    <div style="position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0;" aria-hidden="true">
+      <div class="hero-glow opacity-60 mix-blend-screen"></div>
+    </div>
     {showRunners && <GridRunners />}
     <div class="vignette" aria-hidden="true"></div>
-    <div style="position: relative; z-index: 10;" class="flex flex-col min-h-screen">
+    <div style="position: relative; z-index: 10;" class="flex flex-col min-h-screen overflow-x-hidden">
       <slot />
     </div>
   </body>
