@@ -60,7 +60,7 @@ export const workHistory: WorkEntry[] = [
       {
         title: "Network Engineer",
         startDate: "2016-08",
-        endDate: "2028-07",
+        endDate: "2018-07",
       },
     ],
   },
