@@ -14,23 +14,23 @@ export function formatDateShort(date: Date): string {
   });
 }
 
-export function formatDateISO(date: Date): string {
-  return date.toISOString().split("T")[0];
+export function getVisiblePosts<T extends { data: { draft?: boolean } }>(
+  posts: T[]
+): T[] {
+  return import.meta.env.DEV ? posts : posts.filter((post) => !post.data.draft);
 }
 
-export type BlogPost = {
-  slug: string;
-  data: {
-    title: string;
-    date: Date;
-    readTime: string;
-    tags: string[];
-    excerpt: string;
-    featureImage?: string;
-  };
-};
+export function slugifyTag(tag: string): string {
+  return tag
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+}
 
-export function sortPostsByDate(posts: BlogPost[]): BlogPost[] {
+export function sortPostsByDate<T extends { data: { date: Date } }>(
+  posts: T[]
+): T[] {
   return [...posts].sort(
     (a, b) => b.data.date.getTime() - a.data.date.getTime()
   );

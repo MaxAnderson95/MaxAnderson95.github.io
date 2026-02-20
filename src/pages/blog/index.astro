@@ -4,12 +4,14 @@ import Navbar from "../../components/Navbar.astro";
 import BlogCard from "../../components/BlogCard";
 import Footer from "../../components/Footer";
 import { getCollection } from "astro:content";
-import { formatDateShort, sortPostsByDate } from "../../lib/utils";
+import {
+  formatDateShort,
+  getVisiblePosts,
+  sortPostsByDate,
+} from "../../lib/utils";
 
 const allPosts = await getCollection("blog");
-const posts = sortPostsByDate(
-  (import.meta.env.DEV ? allPosts : allPosts.filter((post: any) => !post.data.draft)) as any
-);
+const posts = sortPostsByDate(getVisiblePosts(allPosts));
 ---
 
 <BaseLayout title="Blog — Max Anderson">
@@ -28,14 +30,14 @@ const posts = sortPostsByDate(
 
     {/* Posts grid */}
     <div class="grid gap-4 md:grid-cols-2">
-      {posts.map((post: any, i: number) => (
+      {posts.map((post, i) => (
         <BlogCard
-          client:idle
           slug={post.id}
           title={post.data.title}
           date={formatDateShort(post.data.date)}
           readTime={post.data.readTime}
           tags={post.data.tags}
+          featureImage={post.data.featureImage}
           excerpt={post.data.excerpt}
           index={i}
         />
@@ -43,5 +45,5 @@ const posts = sortPostsByDate(
     </div>
   </main>
 
-  <Footer client:idle />
+  <Footer />
 </BaseLayout>

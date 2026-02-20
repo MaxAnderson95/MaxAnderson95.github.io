@@ -1,4 +1,6 @@
 ---
+import { siteData } from "../data/site";
+
 const { active = "home" } = Astro.props;
 
 interface Props {
@@ -63,7 +65,7 @@ interface Props {
     {/* Social Icons */}
     <div class="hidden sm:flex items-center gap-1 pr-2">
       <a
-        href="https://github.com/MaxAnderson95"
+        href={siteData.socials.github.url}
         target="_blank"
         rel="noopener noreferrer"
         class="p-2 text-text-muted hover:text-accent hover:bg-white/5 rounded-full transition-all duration-200"
@@ -85,7 +87,7 @@ interface Props {
         </svg>
       </a>
       <a
-        href="https://www.linkedin.com/in/maxanderson95"
+        href={siteData.socials.linkedin.url}
         target="_blank"
         rel="noopener noreferrer"
         class="p-2 text-text-muted hover:text-[#0077b5] hover:bg-white/5 rounded-full transition-all duration-200"
@@ -108,7 +110,7 @@ interface Props {
         </svg>
       </a>
       <a
-        href="mailto:max.a.anderson95@gmail.com"
+        href={siteData.socials.email.url}
         class="p-2 text-text-muted hover:text-accent hover:bg-white/5 rounded-full transition-all duration-200"
         aria-label="Email"
       >
@@ -132,6 +134,8 @@ interface Props {
 </nav>
 
 <script>
+  let cleanupScrollListener: (() => void) | undefined;
+
   function initNavbar() {
     const navbar = document.getElementById("navbar");
     const navContainer = document.getElementById("nav-container");
@@ -140,44 +144,57 @@ interface Props {
 
     if (!navbar || !navContainer || !navPills || !navSeparator) return;
 
+    const navbarEl = navbar;
+    const navContainerEl = navContainer;
+    const navPillsEl = navPills;
+    const navSeparatorEl = navSeparator;
+
     function updateScroll() {
       const scrolled = window.scrollY > 20;
 
       if (scrolled) {
         // Navbar container becomes the backdrop
-        navbar.classList.remove("py-6", "pointer-events-none");
-        navbar.classList.add("py-4", "bg-black/40", "backdrop-blur-md", "border-white/5");
-        navbar.classList.remove("border-transparent");
+        navbarEl.classList.remove("py-6", "pointer-events-none");
+        navbarEl.classList.add("py-4", "bg-black/40", "backdrop-blur-md", "border-white/5");
+        navbarEl.classList.remove("border-transparent");
         
         // Inner container loses its glass styles
-        navContainer.classList.remove("glass-panel", "shadow-2xl", "shadow-black/50", "border-border-highlight/50", "px-2", "py-2");
-        navContainer.classList.add("bg-transparent", "border-transparent", "shadow-none");
+        navContainerEl.classList.remove("glass-panel", "shadow-2xl", "shadow-black/50", "border-border-highlight/50", "px-2", "py-2");
+        navContainerEl.classList.add("bg-transparent", "border-transparent", "shadow-none");
         
         // Pills container loses background
-        navPills.classList.remove("bg-black/20", "border", "border-white/5");
-        navPills.classList.add("bg-transparent", "border-transparent");
+        navPillsEl.classList.remove("bg-black/20", "border", "border-white/5");
+        navPillsEl.classList.add("bg-transparent", "border-transparent");
         
         // Separator changes color
-        navSeparator.classList.remove("bg-border");
-        navSeparator.classList.add("bg-white/10");
+        navSeparatorEl.classList.remove("bg-border");
+        navSeparatorEl.classList.add("bg-white/10");
       } else {
         // Reset to initial state
-        navbar.classList.add("py-6", "pointer-events-none");
-        navbar.classList.remove("py-4", "bg-black/40", "backdrop-blur-md", "border-white/5");
-        navbar.classList.add("border-transparent");
+        navbarEl.classList.add("py-6", "pointer-events-none");
+        navbarEl.classList.remove("py-4", "bg-black/40", "backdrop-blur-md", "border-white/5");
+        navbarEl.classList.add("border-transparent");
         
-        navContainer.classList.add("glass-panel", "shadow-2xl", "shadow-black/50", "border-border-highlight/50", "px-2", "py-2");
-        navContainer.classList.remove("bg-transparent", "border-transparent", "shadow-none");
+        navContainerEl.classList.add("glass-panel", "shadow-2xl", "shadow-black/50", "border-border-highlight/50", "px-2", "py-2");
+        navContainerEl.classList.remove("bg-transparent", "border-transparent", "shadow-none");
         
-        navPills.classList.add("bg-black/20", "border", "border-white/5");
-        navPills.classList.remove("bg-transparent", "border-transparent");
+        navPillsEl.classList.add("bg-black/20", "border", "border-white/5");
+        navPillsEl.classList.remove("bg-transparent", "border-transparent");
         
-        navSeparator.classList.add("bg-border");
-        navSeparator.classList.remove("bg-white/10");
+        navSeparatorEl.classList.add("bg-border");
+        navSeparatorEl.classList.remove("bg-white/10");
       }
     }
 
-    window.addEventListener("scroll", updateScroll);
+    if (cleanupScrollListener) {
+      cleanupScrollListener();
+    }
+
+    window.addEventListener("scroll", updateScroll, { passive: true });
+    cleanupScrollListener = () => {
+      window.removeEventListener("scroll", updateScroll);
+    };
+
     // Initial check
     updateScroll();
   }

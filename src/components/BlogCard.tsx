@@ -4,6 +4,7 @@ interface Props {
   date: string;
   readTime: string;
   tags: string[];
+  featureImage?: string;
   excerpt?: string;
   index: number;
 }
@@ -14,6 +15,7 @@ export default function BlogCard({
   date,
   readTime,
   tags,
+  featureImage,
   excerpt,
   index,
 }: Props) {
@@ -31,6 +33,17 @@ export default function BlogCard({
       
       {/* Content Container */}
       <div className="relative z-10 flex flex-col h-full justify-between gap-6">
+
+        {featureImage && (
+          <div className="overflow-hidden rounded-xl border border-white/10">
+            <img
+              src={featureImage}
+              alt={`${title} feature image`}
+              loading="lazy"
+              className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+            />
+          </div>
+        )}
         
         {/* Top Section */}
         <div>

@@ -2,25 +2,28 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Navbar from "../../components/Navbar.astro";
 import Footer from "../../components/Footer";
-import { getCollection, render } from "astro:content";
-import { formatDate } from "../../lib/utils";
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import { formatDate, getVisiblePosts } from "../../lib/utils";
 
 export async function getStaticPaths() {
   const allPosts = await getCollection("blog");
-  const posts = import.meta.env.DEV
-    ? allPosts
-    : allPosts.filter((post: any) => !post.data.draft);
-  return posts.map((post: any) => ({
+  const posts = getVisiblePosts(allPosts);
+
+  return posts.map((post) => ({
     params: { slug: post.id },
     props: { post },
   }));
 }
 
-const { post } = Astro.props;
+const { post } = Astro.props as { post: CollectionEntry<"blog"> };
 const { Content } = await render(post);
 ---
 
-<BaseLayout title={`${post.data.title} — Max Anderson`}>
+<BaseLayout
+  title={`${post.data.title} — Max Anderson`}
+  description={post.data.excerpt}
+  image={post.data.featureImage}
+>
   <Navbar active="blog" />
 
   <main class="relative z-10 max-w-[1100px] mx-auto px-6 md:px-10 pt-28 pb-20">
@@ -66,6 +69,15 @@ const { Content } = await render(post);
 
         {/* Decorative rule */}
         <div class="mt-8 h-px bg-gradient-to-r from-accent/40 via-border-subtle to-transparent" />
+
+        {post.data.featureImage && (
+          <img
+            src={post.data.featureImage}
+            alt={`${post.data.title} feature image`}
+            class="mt-8 w-full rounded-2xl border border-border object-cover shadow-[0_10px_40px_rgba(0,0,0,0.45)]"
+            loading="eager"
+          />
+        )}
       </header>
 
       {/* Body */}
@@ -98,5 +110,5 @@ const { Content } = await render(post);
     </article>
   </main>
 
-  <Footer client:idle />
+  <Footer />
 </BaseLayout>

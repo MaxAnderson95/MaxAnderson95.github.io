@@ -14,10 +14,22 @@ interface Props {
 }
 
 function formatCertDate(iso: string): string {
-  return new Date(iso + "T00:00:00").toLocaleDateString("en-US", {
+  const [year, month] = iso.split("-").map(Number);
+  const date = new Date(year, month - 1, 1);
+
+  return date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
   });
+}
+
+function getTodayIsoDate(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
 export default function CertCard({
@@ -32,7 +44,7 @@ export default function CertCard({
   index,
 }: Props) {
   const delay = `${0.15 + index * 0.1}s`;
-  const isExpired = validUntil ? new Date(validUntil) < new Date() : false;
+  const isExpired = validUntil ? validUntil < getTodayIsoDate() : false;
 
   const cardClassName = `reveal group relative block w-full h-full p-8 rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] border border-white/5 hover:border-white/10 bg-surface/40 backdrop-blur-md${url ? " cursor-pointer" : ""}`;
 

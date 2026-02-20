@@ -1,15 +1,8 @@
 import TypeIt from "typeit-react";
 
-interface Social {
-  url: string;
-  handle?: string;
-  address?: string;
-}
-
 interface Props {
   name: string;
   bio: string;
-  socials: Record<string, Social>;
   roles: string[];
 }
 
@@ -20,7 +13,7 @@ interface ParsedRole {
   hasEngineerAtEnd: boolean;
 }
 
-export default function Hero({ name, bio, socials, roles }: Props) {
+export default function Hero({ name, bio, roles }: Props) {
   const engineerRegex = /\bengineer\b/i;
   const rolePauseMs = 2000;
 
@@ -127,7 +120,7 @@ export default function Hero({ name, bio, socials, roles }: Props) {
               </p>
             </div>
 
-            {/* Social links + CTA */}
+            {/* CTA */}
             <div
               className="reveal mt-10 flex flex-wrap items-center gap-6 pl-1"
               style={{ animationDelay: "0.7s" }}

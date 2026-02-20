@@ -62,7 +62,6 @@ const resolvedCerts: ResolvedCert[] = certifications.map((cert: Certification) =
     <div class="grid gap-4 md:grid-cols-2">
       {resolvedCerts.map((cert, i) => (
         <CertCard
-          client:idle
           name={cert.name}
           issuer={cert.issuer}
           issuerColor={cert.issuerColor}
@@ -77,5 +76,5 @@ const resolvedCerts: ResolvedCert[] = certifications.map((cert: Certification) =
     </div>
   </main>
 
-  <Footer client:idle />
+  <Footer />
 </BaseLayout>

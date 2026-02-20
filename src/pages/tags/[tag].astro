@@ -4,16 +4,19 @@ import Navbar from "../../components/Navbar.astro";
 import BlogCard from "../../components/BlogCard";
 import Footer from "../../components/Footer";
 import { getCollection } from "astro:content";
-import { formatDateShort, sortPostsByDate } from "../../lib/utils";
+import {
+  formatDateShort,
+  getVisiblePosts,
+  slugifyTag,
+  sortPostsByDate,
+} from "../../lib/utils";
 
 export async function getStaticPaths() {
   const allPosts = await getCollection("blog");
-  const posts = import.meta.env.DEV
-    ? allPosts
-    : allPosts.filter((post: any) => !post.data.draft);
+  const posts = getVisiblePosts(allPosts);
 
   const tags = new Set<string>();
-  for (const post of posts as any[]) {
+  for (const post of posts) {
     for (const tag of post.data.tags) {
       tags.add(tag);
     }
@@ -21,23 +24,17 @@ export async function getStaticPaths() {
 
   return [...tags].map((tag) => ({
     params: {
-      tag: tag
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .trim()
-        .replace(/\s+/g, "-"),
+      tag: slugifyTag(tag),
     },
     props: { tag },
   }));
 }
 
-const { tag } = Astro.props;
+const { tag } = Astro.props as { tag: string };
 const allPosts = await getCollection("blog");
-const visiblePosts = import.meta.env.DEV
-  ? allPosts
-  : allPosts.filter((post: any) => !post.data.draft);
+const visiblePosts = getVisiblePosts(allPosts);
 const posts = sortPostsByDate(
-  visiblePosts.filter((post: any) => post.data.tags.includes(tag)) as any
+  visiblePosts.filter((post) => post.data.tags.includes(tag))
 );
 ---
 
@@ -73,14 +70,14 @@ const posts = sortPostsByDate(
     </div>
 
     <div class="grid gap-4 md:grid-cols-2">
-      {posts.map((post: any, i: number) => (
+      {posts.map((post, i) => (
         <BlogCard
-          client:idle
           slug={post.id}
           title={post.data.title}
           date={formatDateShort(post.data.date)}
           readTime={post.data.readTime}
           tags={post.data.tags}
+          featureImage={post.data.featureImage}
           excerpt={post.data.excerpt}
           index={i}
         />
@@ -88,5 +85,5 @@ const posts = sortPostsByDate(
     </div>
   </main>
 
-  <Footer client:idle />
+  <Footer />
 </BaseLayout>
