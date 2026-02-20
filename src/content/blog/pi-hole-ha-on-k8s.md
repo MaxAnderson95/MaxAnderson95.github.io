@@ -42,7 +42,7 @@ This guide assumes you have a Kubernetes cluster with the following:
 
 To get started, we'll create a namespace to hold the objects we're about to create. 
 
-```yaml
+```yaml title="namespace.yaml" icon="manifest"
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -53,7 +53,7 @@ metadata:
 
 Next we'll create a ConfigMap that holds any of the (non-secret) Pi-hole configurable options that we'd like to set for each of our instances. The comprehensive list of options can be found [here](https://github.com/pi-hole/docker-pi-hole#environment-variables). These options will later be passed in as environment variables to the Pi-hole pods.
 
-```yaml
+```yaml title="pihole-configmap.yaml" icon="manifest"
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -70,7 +70,7 @@ Here I'm setting `PIHOLE_DNS_` to the IP addresses of upstream DNS servers I wis
 
 Next we'll create a secret to store our Pi-hole administrator password. This is critical because this password will be used by Orbital-Sync to log into each node to perform backup and restore operations. We do this by creating a secret object with a `WEBPASSWORD` data field.
 
-```yaml
+```yaml title="pihole-password.yaml" icon="manifest"
 apiVersion: v1
 kind: Secret
 metadata:
@@ -102,7 +102,7 @@ Within our StatefulSet definition we will do the following:
 
 Here is our completed StatefulSet definition:
 
-```yaml
+```yaml title="statefulset.yaml" icon="manifest"
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -184,7 +184,7 @@ We'll expose web within the cluster only, and later use an ingress controller to
 
 First let's start with the headless service:
 
-```yaml
+```yaml title="headless-service.yaml" icon="manifest"
 apiVersion: v1
 kind: Service
 metadata:
@@ -205,7 +205,7 @@ spec:
 
 Next we expose the Web interface as a standard ClusterIP service, but importantly we only want to direct web interface traffic to our "primary" instance of Pi-hole. This is because changes made to any of the secondary instances will be overwritten automatically once we setup Orbital-Sync.
 
-```yaml {linenos=false,hl_lines=[9]}
+```yaml title="web-service.yaml" icon="manifest" mark={9}
 kind: Service 
 apiVersion: v1 
 metadata:
@@ -229,7 +229,7 @@ To do this we use an additonal selector to point to the specific `pihole-0` pod.
 
 Finally we expose the actual DNS services on TCP and UDP ports 53 as type `LoadBalancer`. This will provide us an IP address external to the cluster that we will point our network clients to for DNS resolution:
 
-```yaml {linenos=false,hl_lines=[7,24]}
+```yaml title="dns-services.yaml" icon="manifest" mark={7, 24}
 kind: Service
 apiVersion: v1
 metadata:
@@ -298,7 +298,7 @@ To secure our web-interface we'll want to first create a TLS certificate using [
 
 Let's create our certificate:
 
-```yaml
+```yaml title="certificate.yaml" icon="manifest"
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -334,7 +334,7 @@ Next we create the ingress routes, with the proper re-directions needed. We achi
 
 Here's our manifests:
 
-```yaml
+```yaml title="ingress.yaml" icon="manifest"
 apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
@@ -414,7 +414,7 @@ Now we have three independent instances of Pi-hole, but can only configure the p
 
 Orbital-Sync is configured using environment variables. Let's specify our data within a ConfigMap that we later mount as environment variables within the orbital-sync pod. A full list of configuration options can be found [here](https://github.com/mattwebbio/orbital-sync#configuration).
 
-```yaml
+```yaml title="orbital-sync-configmap.yaml" icon="manifest"
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -440,7 +440,7 @@ Within our `Deployment` definition we will do the following:
 
 Here is our completed Deployment definition:
 
-```yaml
+```yaml title="orbital-sync-deployment.yaml" icon="manifest"
 apiVersion: apps/v1
 kind: Deployment
 metadata:

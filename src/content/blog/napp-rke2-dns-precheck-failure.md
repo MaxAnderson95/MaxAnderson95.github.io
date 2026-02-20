@@ -22,20 +22,20 @@ Off to the logs! I started by downloading a support bundle from the manager clus
 
 Within the log I can see the system is running a function to extract the cluster dns domain. This seems like what we're looking for!
 
-```
+```log title="napps.log"
 2022-11-17 22:41:32,901 INFO nsx_kubernetes_lib.vmware.kubernetes.service.kubectl.kubectl_117_service[289]:get_cluster_dns_domain Getting cluster dns domain {}
 ```
 
 However a few lines later we see that it fails, reporting that the confimap it was looking for in our cluster doesn't exist.
 
-```
+```log title="napps.log"
 2022-11-17 22:41:32,981 ERROR nsx_kubernetes_lib.vmware.kubernetes.common.utility[35]:execute Error executing command ['kubectl', 'get', 'configmap', 'kubeadm-config', '-n', 'kube-system', '-o', 'yaml', '--kubeconfig=/config/vmware/napps/.kube/config'],  'Error from server (NotFound): configmaps "kubeadm-config" not found\n'
 2022-11-17 22:41:32,981 ERROR __main__[70]:main Error executing function get_cluster_dns_domain. Error message: Error from server (NotFound): configmaps "kubeadm-config" not found\n
 ```
 
 I notice that it's looking for a ConfigMap called **kubeadm-config**. Just to ensure that this wasn't some bug I ran the same command myself and sure enough it returned no results.
 
-```
+```text
 > kubectl get configmap -n kube-system kubeadm-config
 
 Error from server (NotFound): configmaps "kubeadm-config" not found
@@ -47,9 +47,7 @@ It turns out that RKE2 does not use Kubeadm to form the cluster and thus never w
 
 So how do we fix this without switching to another K8s distribution? If we look at a **kubeadm-config** ConfigMap from another cluster (I used a [Kind](https://kind.sigs.k8s.io/) cluster), we find that the **dnsDomain** is indeed listed.
 
-```yaml {linenos=false,hl_lines=[1,"28-29"]}
-> kubectl get configmap -n kube-system kubeadm-config -o yaml
-
+```yaml title="kubeadm-config.yaml" icon="manifest" mark={28-29}
 apiVersion: v1
 data:
   ClusterConfiguration: |
@@ -90,7 +88,7 @@ metadata:
 ```
 
 To fix we simply create our own **kubeadm-config** ConfigMap with just the data we need:
-```yaml {linenos=false,hl_lines=["4-5"]}
+```yaml title="fake-kubeadm-config.yaml" icon="manifest" icon="manifest" mark={4-5}
 apiVersion: v1
 data:
   ClusterConfiguration: |
@@ -108,7 +106,7 @@ By default most clusters use **cluster.local** as the DNS domain name. This is t
 
 Then we just throw this in a file and apply it to our cluster!
 
-```txt
+```text
 > kubectl apply -f fake-kubeadm-config.yaml
 
 configmap/kubeadm-config created
@@ -120,7 +118,7 @@ If we run the prechecks again, voila, the DNS domain name check is now passing!
 ## TL;DR
 Apply the following configmap to your cluster and re-run the wizard:
 
-```yaml
+```yaml title="fake-kubeadm-config.yaml" icon="manifest"
 apiVersion: v1
 data:
   ClusterConfiguration: |

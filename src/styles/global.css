@@ -503,27 +503,23 @@
   border: 1px solid var(--color-border);
 }
 
-.prose pre {
-  background: #080808 !important;
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 1.5em;
+.expressive-code {
   margin: 2.5em 0;
-  overflow-x: auto;
-  font-size: 0.85em;
-  line-height: 1.7;
-  box-shadow: 
-    0 4px 20px rgba(0,0,0,0.5),
-    inset 0 0 0 1px rgba(255,255,255,0.05);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  border-radius: 0.5rem;
 }
 
-.prose pre code {
-  background: none;
-  border: none;
-  padding: 0;
-  color: inherit;
-  font-size: inherit;
-  text-shadow: none;
+/* File Icon Styling */
+.expressive-code .title {
+  display: flex !important;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.expressive-code .title svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
 }
 
 .prose blockquote {

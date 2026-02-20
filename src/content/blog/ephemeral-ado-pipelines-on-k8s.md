@@ -25,8 +25,7 @@ At my current job, we use Azure DevOps and Azure Pipelines for code repos and CI
 
 For example we simply declare the use of a [valid](https://learn.microsoft.com/en-us/azure/devops/pipelines/agents/hosted?view=azure-devops&tabs=yaml) `vmImage` within the pool stanza of our job definition, which will automatically run the job on a Microsoft-hosted agent running that OS:
 
-```yaml
-# azure-pipelines.yaml
+```yaml title="azure-pipelines.yaml" icon="manifest"
 jobs:
 - job: myJob
   pool:
@@ -61,7 +60,7 @@ First we need to build a container image which will run our agent. The easiest w
 
 1. First we create a file called `start.sh` which will be used as our entrypoint when the container starts up. We're using Microsoft's script as a starting point, with the highlighted portions indicating my additions and changes. This script downloads the agent software, registers itself with our tenant, and waits to receive a job.
 
-    ```bash {linenos=false,hl_lines=["40-44",82,103]}
+    ```bash title="start.sh" mark={40-44, 82, 103}
     #!/bin/bash
     set -e
 
@@ -175,8 +174,7 @@ First we need to build a container image which will run our agent. The easiest w
 
 1. Next we create a `Dockerfile` which defines how our container image is built:
 
-    ```dockerfile
-    # dockerfile
+    ```dockerfile title="Dockerfile" icon="docker"
     FROM ubuntu:22.04
 
     RUN apt update
@@ -233,8 +231,7 @@ Next we prepare our Kubernetes environment to run our custom agent container.
 
 1. Create a namespace to deploy our Kubernetes resources to:
 
-    ```yaml
-    # namespace.yaml
+    ```yaml title="namespace.yaml" icon="manifest"
     apiVersion: v1
     kind: Namespace
     metadata:
@@ -243,15 +240,14 @@ Next we prepare our Kubernetes environment to run our custom agent container.
 
 1. Base64 encode your PAT:
 
-    ```shell
-    > echo -n "TOKEN" | base64
-    VE9LRU4=
+    ```bash
+    echo -n "TOKEN" | base64
+    # VE9LRU4=
     ```
 
 1. Place the base64 encoded PAT into a secret object and apply it to your cluster:
 
-    ```yaml
-    # secret.yaml
+    ```yaml title="secret.yaml" icon="manifest"
     apiVersion: v1
     kind: Secret
     metadata:
@@ -265,8 +261,7 @@ Next we prepare our Kubernetes environment to run our custom agent container.
 
     First is a `ServiceAccount`:
 
-    ```yaml
-    # service-accounts.yaml
+    ```yaml title="service-account.yaml" icon="manifest"
     apiVersion: v1
     kind: ServiceAccount
     metadata:
@@ -276,8 +271,7 @@ Next we prepare our Kubernetes environment to run our custom agent container.
 
     Next is a `Role` that allows deleting pods and re-rolling deployments in the `azp-agent` namespace:
 
-    ```yaml
-    # role.yaml
+    ```yaml title="role.yaml" icon="manifest"
     apiVersion: rbac.authorization.k8s.io/v1
     kind: Role
     metadata:
@@ -299,8 +293,7 @@ Next we prepare our Kubernetes environment to run our custom agent container.
 
     Finally a `RoleBinding` that binds the `ServiceAccount` to the `Role`:
 
-    ```yaml
-    # role-binding.yaml
+    ```yaml title="role-binding.yaml" icon="manifest"
     apiVersion: rbac.authorization.k8s.io/v1
     kind: RoleBinding
     metadata:
@@ -322,7 +315,7 @@ Now we can deploy the agent(s) to our Kubernetes cluster. We'll use a `Deploymen
 
 A deployment is nice because if a pod is deleted (like when a pipeline job finishes), K8s will spin up a replacement pod automatically in its place.
 
-```yaml
+```yaml title="deployment.yaml" icon="manifest"
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -391,7 +384,7 @@ At this point you could stop here and have a fully working solution. But I aim t
 
 We can create a simple `CronJob` that performs a rollout restart on our deployment every week (for example). This will delete each pod replica, and deploy a new one in its place. This allows you to pull a new copy of the image, as well as any updates to the Azure Pipelines agent itself.
 
-```yaml
+```yaml title="cronjob.yaml" icon="manifest"
 apiVersion: batch/v1
 kind: CronJob
 metadata:
@@ -436,8 +429,7 @@ Here, we see our three agents running in Kubernetes:
 
 We'll create a basic Azure Pipeline and use the pool that we specified in the `AZP_POOL` environment variable to ensure it targets our K8s agents.
 
-```yaml
-# azure-pipelines.yaml
+```yaml title="azure-pipelines.yaml" icon="manifest"
 trigger:
 - main
 
