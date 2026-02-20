@@ -1,23 +1,15 @@
 export const siteData = {
   name: "Max Anderson",
-  title: "Sr. Systems Engineer",
-  subtitle: "Specializing in DevOps and Cloud Infrastructure",
-  bio: "I'm from sunny Southwest Florida, but currently live in the Atlanta Metro Area working for a mid-size Credit Union. In my free time I enjoy watching Formula 1, being a dog dad, and homelabbing.",
-  profileImage: "/img/me.png",
+  bio: "I'm a Senior System Engineer with over a decade of experience spanning traditional IT to modern cloud-native infrastructure. I love all things cloud-native and specialize in Kubernetes, Azure, and Infrastructure-as-Code, leveraging AI to amplify engineering productivity while writing about cloud-native and platform architecture at MaxAnderson.tech.",
   socials: {
     github: {
       url: "https://github.com/MaxAnderson95",
-      handle: "MaxAnderson95",
     },
     linkedin: {
       url: "https://www.linkedin.com/in/maxanderson95",
-      handle: "maxanderson95",
     },
     email: {
       url: "mailto:max.a.anderson95@gmail.com",
-      address: "max.a.anderson95@gmail.com",
     },
   },
-  location: "Atlanta Metro Area",
-  employer: "Mid-size Credit Union",
 };
