@@ -633,7 +633,7 @@
 /* Timeline entry (card wrapper) — absolute positioned by JS */
 .timeline-entry {
   position: absolute;
-  width: calc(50% - 28px);
+  width: calc(50% - 24px);
   opacity: 0;
   transform: translateY(24px);
   transition:
@@ -683,11 +683,41 @@
 }
 
 .timeline-entry[data-side="left"]::before {
-  left: calc(100% + 21px);
+  left: calc(100% + 17px);
 }
 
 .timeline-entry[data-side="right"]::before {
-  right: calc(100% + 21px);
+  right: calc(100% + 17px);
+}
+
+/* Chevron marker pointing toward the card */
+.timeline-entry::after {
+  content: "";
+  position: absolute;
+  top: calc(2rem + 3.5px);
+  width: 7px;
+  height: 7px;
+  border-top: 1.5px solid var(--color-accent);
+  border-right: 1.5px solid var(--color-accent);
+  z-index: 2;
+  opacity: 0;
+  filter: drop-shadow(0 0 3px var(--color-accent-glow));
+  transition: opacity 0.4s ease;
+  transition-delay: calc(var(--entry-index, 0) * 0.1s + 0.3s);
+}
+
+.timeline-entry.is-visible::after {
+  opacity: 1;
+}
+
+.timeline-entry[data-side="left"]::after {
+  left: calc(100% + 8px);
+  transform: rotate(225deg);
+}
+
+.timeline-entry[data-side="right"]::after {
+  right: calc(100% + 8px);
+  transform: rotate(45deg);
 }
 
 /* === Mobile layout (single column) === */
@@ -718,6 +748,15 @@
     height: 10px;
     border-width: 2px;
   }
+
+  .timeline-entry::after {
+    left: -8px !important;
+    right: auto !important;
+    top: calc(2rem + 2.5px) !important;
+    width: 5px !important;
+    height: 5px !important;
+    transform: rotate(45deg) !important;
+  }
 }
 
 /* ===== Reduced motion ===== */
@@ -744,6 +783,11 @@
   .timeline-entry::before {
     opacity: 1;
     transform: none;
+    transition: none;
+  }
+
+  .timeline-entry::after {
+    opacity: 1;
     transition: none;
   }
 

@@ -30,6 +30,8 @@ export const workHistory: WorkEntry[] = [
         title: "Sr. System Engineer Team Lead",
         startDate: "2025-03",
         endDate: null,
+        description:
+          "Lead a team of systems engineers responsible for enterprise IT infrastructure supporting critical financial services, emphasizing high availability and security.\n\nSpearhead the organization's cloud-native transformation, implementing a Kubernetes-based platform and DevOps methodologies to enhance scalability and operational resilience of critical member-facing applications.",
       },
       {
         title: "System Engineer II",
@@ -55,12 +57,14 @@ export const workHistory: WorkEntry[] = [
   },
   {
     company: "vTECH io",
-    location: "Southwest Florida",
+    location: "Fort Myers, FL",
     positions: [
       {
         title: "Network Engineer",
         startDate: "2016-08",
         endDate: "2018-07",
+        description:
+          "Worked as a Network Engineer for an IT managed services provider, responsible for designing, implementing, and maintaining network infrastructure for a diverse client base. Managed network configurations, performed troubleshooting, and ensured optimal performance and security of client networks.",
       },
     ],
   },
@@ -72,11 +76,15 @@ export const workHistory: WorkEntry[] = [
         title: "Desktop Support Technician - Client Services Support",
         startDate: "2013-03",
         endDate: "2016-07",
+        description:
+          "Provided desktop support for the corporate campus of a large retail company, assisting employees with hardware and software issues, troubleshooting network connectivity problems, and ensuring smooth operation of IT systems.",
       },
       {
         title: "Intern - Core Infrastructure",
         startDate: "2012-10",
         endDate: "2013-02",
+        description:
+          "Assisted the core infrastructure team with various IT projects, gaining hands-on experience in server maintenance, network administration, and IT support within a corporate environment.",
       },
     ],
   },

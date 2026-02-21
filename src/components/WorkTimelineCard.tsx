@@ -45,9 +45,9 @@ export default function WorkTimelineCard({
 
       <div className="relative z-10">
         {/* Company Header */}
-        <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
-          <div>
-            <h2 className="text-xl md:text-2xl font-display font-semibold text-text leading-tight group-hover:text-white transition-colors duration-300">
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <div className="min-w-0">
+            <h2 className="text-xl font-display font-semibold text-text leading-tight text-balance group-hover:text-white transition-colors duration-300">
               {companyUrl ? (
                 <a
                   href={companyUrl}
@@ -68,7 +68,7 @@ export default function WorkTimelineCard({
           </div>
 
           {/* Overall date range pill */}
-          <span className="shrink-0 px-2.5 py-1 text-[0.6875rem] font-mono rounded-md bg-accent/10 text-accent border border-accent/20 whitespace-nowrap">
+          <span className="shrink-0 px-2 py-0.5 text-[0.625rem] md:px-2.5 md:py-1 md:text-[0.6875rem] font-mono rounded-md bg-accent/10 text-accent border border-accent/20 whitespace-nowrap">
             <time dateTime={earliestStart}>{formatWorkDate(earliestStart)}</time> &mdash;{" "}
             {latestEnd ? <time dateTime={latestEnd}>{formatWorkDate(latestEnd)}</time> : "Present"}
           </span>
@@ -86,11 +86,11 @@ export default function WorkTimelineCard({
               }
             >
               {/* Position title + dates */}
-              <div className="flex flex-wrap items-baseline justify-between gap-2 mb-2.5">
-                <h3 className="text-[0.9375rem] font-display font-medium text-text">
+              <div className="flex items-baseline justify-between gap-2 mb-2.5">
+                <h3 className="text-[0.9375rem] font-display font-medium text-text min-w-0">
                   {pos.title}
                 </h3>
-                <span className="text-[0.75rem] font-mono text-text-muted whitespace-nowrap">
+                <span className="shrink-0 text-[0.75rem] font-mono text-text-muted whitespace-nowrap">
                   <time dateTime={pos.startDate}>{formatWorkDate(pos.startDate)}</time> &mdash;{" "}
                   {pos.endDate ? <time dateTime={pos.endDate}>{formatWorkDate(pos.endDate)}</time> : "Present"}
                 </span>
@@ -98,9 +98,13 @@ export default function WorkTimelineCard({
 
               {/* Description */}
               {pos.description && (
-                <p className="text-[0.875rem] text-text-secondary font-light leading-relaxed">
-                  {pos.description}
-                </p>
+                <div className="space-y-3">
+                  {pos.description.split("\n\n").map((para, i) => (
+                    <p key={i} className="text-[0.875rem] text-text-secondary font-light leading-relaxed">
+                      {para}
+                    </p>
+                  ))}
+                </div>
               )}
             </div>
           ))}
