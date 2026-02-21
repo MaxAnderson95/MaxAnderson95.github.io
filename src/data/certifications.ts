@@ -34,7 +34,7 @@ export const certifications: Certification[] = [
     name: "Certified Kubernetes Administrator (CKA)",
     issuer: "CNCF",
     issuerColor: "#326CE5",
-    simpleIconSlug: "kubernetes",
+    simpleIconSlug: "cncf",
     achievedDate: "2023-02-11",
     validUntil: "2026-02-11",
     url: "https://www.credly.com/badges/223dc691-1730-4d83-8039-0f379787dad7",
