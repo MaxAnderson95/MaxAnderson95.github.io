@@ -4,7 +4,7 @@ interface Props {
   slug: string;
   title: string;
   date: string;
-  rawDate?: string;
+  rawDate: string;
   readTime: string;
   tags: string[];
   featureImage?: string;
@@ -43,7 +43,7 @@ export default function BlogCard({
           <div className="overflow-hidden rounded-xl border border-white/10">
             <img
               src={featureImage}
-              alt={featureImageAlt || ""}
+              alt={featureImageAlt || `Feature image for ${title}`}
               loading="lazy"
               className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             />
