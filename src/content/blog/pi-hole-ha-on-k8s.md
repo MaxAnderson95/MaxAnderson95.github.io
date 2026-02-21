@@ -5,6 +5,7 @@ readTime: "11 min read"
 tags: ["pihole", "K8s", "RKE2"]
 excerpt: "In my home lab I run a three node Kubernetes cluster using the [RKE2 distribution](https://docs.rke2.io/) from Rancher Labs. I use this for testing/experimentation, running my U..."
 featureImage: "/img/blog/pi-hole-ha-on-k8s/feature.jpg"
+featureImageAlt: "Pi-hole admin dashboard showing DNS query statistics on a Kubernetes cluster"
 ---
 
 ## Introduction
@@ -51,7 +52,7 @@ metadata:
 
 ### Pi-hole Confiration ConfigMap
 
-Next we'll create a ConfigMap that holds any of the (non-secret) Pi-hole configurable options that we'd like to set for each of our instances. The comprehensive list of options can be found [here](https://github.com/pi-hole/docker-pi-hole#environment-variables). These options will later be passed in as environment variables to the Pi-hole pods.
+Next we'll create a ConfigMap that holds any of the (non-secret) Pi-hole configurable options that we'd like to set for each of our instances. The comprehensive list of options can be found in the [Pi-hole Docker environment variables documentation](https://github.com/pi-hole/docker-pi-hole#environment-variables). These options will later be passed in as environment variables to the Pi-hole pods.
 
 ```yaml title="pihole-configmap.yaml" icon="manifest"
 apiVersion: v1
@@ -287,7 +288,7 @@ Take note of the `External-IP` as you will need it later to point your clients t
 
 As a test, try sending a DNS request to the external IP from your local workstation. You should get a response:
 
-![nslookup](/img/blog/pi-hole-ha-on-k8s/nslookup.png)
+![Terminal output of nslookup query showing successful DNS resolution through the Pi-hole service](/img/blog/pi-hole-ha-on-k8s/nslookup.png)
 
 ### Ingress
 
@@ -295,7 +296,7 @@ In order to access the primary Pi-hole's web interface externally, we need to ex
 
 #### TLS Certificate
 
-To secure our web-interface we'll want to first create a TLS certificate using [CertManager](https://cert-manager.io/). You'll need to first create a `ClusterIssuer` for the CA of your choice, I'll be using [Let's Encrypt](https://letsencrypt.org/). The details for how to do this can be found [here](https://cert-manager.io/docs/configuration/acme/).
+To secure our web-interface we'll want to first create a TLS certificate using [CertManager](https://cert-manager.io/). You'll need to first create a `ClusterIssuer` for the CA of your choice, I'll be using [Let's Encrypt](https://letsencrypt.org/). The details for how to do this can be found in the [cert-manager ACME issuer documentation](https://cert-manager.io/docs/configuration/acme/).
 
 Let's create our certificate:
 
@@ -400,10 +401,10 @@ spec:
 #### Create a DNS record
 
 To access the web interface of Pi-hole we need a DNS record point `pihole.home.maxanderson.tech` to the IP address of our ingress controller, but since Pi-hole is going to be our network's DNS service and we can't configure it without the web interface. This creates a chicken and the egg problem. To solve this, create a temporary entry in your hosts file that points `pihole.home.maxanderson.tech` to the external IP address of your ingress controller. In my case this was assigned by MetalLB as `192.168.1.14`.
-![hosts-file](/img/blog/pi-hole-ha-on-k8s/hosts-file.png)
+![Hosts file editor showing a temporary entry mapping pihole.home.maxanderson.tech to the ingress IP address](/img/blog/pi-hole-ha-on-k8s/hosts-file.png)
 
 Access the URL in your browser and you should be able to sign-in with the password specified in the secret object earlier:
-![pihole-dashboard](/img/blog/pi-hole-ha-on-k8s/pihole-dashboard.png)
+![Pi-hole admin dashboard login page showing the web interface is accessible](/img/blog/pi-hole-ha-on-k8s/pihole-dashboard.png)
 
 Once setup is fully complete, you can go back and create a local DNS record within pihole that points to this IP, then remove the hosts file entry.
 
@@ -413,7 +414,7 @@ Now we have three independent instances of Pi-hole, but can only configure the p
 
 #### Orbital-Sync ConfigMap
 
-Orbital-Sync is configured using environment variables. Let's specify our data within a ConfigMap that we later mount as environment variables within the orbital-sync pod. A full list of configuration options can be found [here](https://github.com/mattwebbio/orbital-sync#configuration).
+Orbital-Sync is configured using environment variables. Let's specify our data within a ConfigMap that we later mount as environment variables within the orbital-sync pod. A full list of configuration options can be found in the [Orbital-Sync configuration documentation](https://github.com/mattwebbio/orbital-sync#configuration).
 
 ```yaml title="orbital-sync-configmap.yaml" icon="manifest"
 apiVersion: v1

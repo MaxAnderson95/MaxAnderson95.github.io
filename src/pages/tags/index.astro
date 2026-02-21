@@ -21,23 +21,25 @@ const tags = [...tagCounts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 <BaseLayout title="Tags — Max Anderson">
   <Navbar active="blog" />
 
-  <main class="relative z-10 max-w-[1100px] mx-auto px-6 md:px-10 pt-28 pb-20">
+  <main id="main-content" tabindex="-1" class="relative z-10 max-w-[1100px] mx-auto px-6 md:px-10 pt-28 pb-20">
     <div class="reveal mb-10" style="animation-delay: 0.15s;">
       <h1 class="font-display font-extrabold text-[clamp(2rem,5vw,3rem)] tracking-tight leading-tight text-text">
         Tags
       </h1>
-      <p class="text-text-secondary text-[17px] mt-3 max-w-xl">
+      <p class="text-text-secondary text-[1.0625rem] mt-3 max-w-xl">
         Browse posts by topic.
       </p>
     </div>
 
-    <div class="reveal flex flex-wrap gap-3" style="animation-delay: 0.25s;">
+    <ul role="list" class="reveal flex flex-wrap gap-3 list-none m-0 p-0" style="animation-delay: 0.25s;">
       {tags.map(([tag, count]) => (
-        <a class="tag" href={`/tags/${slugifyTag(tag)}/`}>
-          {tag} ({count})
-        </a>
+        <li>
+          <a class="tag" href={`/tags/${slugifyTag(tag)}/`}>
+            {tag} ({count})
+          </a>
+        </li>
       ))}
-    </div>
+    </ul>
   </main>
 
   <Footer />

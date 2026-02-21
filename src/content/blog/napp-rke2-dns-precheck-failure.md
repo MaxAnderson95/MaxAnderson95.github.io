@@ -12,7 +12,7 @@ During my quest to roll out the new NSX Application Platform in our production e
 
 During the **Precheck Platform** step of the wizard, the **Kubernetes Cluster DNS Domain Precheck** step reported as failed. When viewing the details, it simply says to contact your administrator, and the [VMware docs](https://docs.vmware.com/en/VMware-NSX/4.0/nsx-application-platform/GUID-BF5917B3-F873-4D8F-BF04-1F7CC5241EE5.html) that have a page for what to do on pre-check failures was conveniently missing a section for this specific check. How helpful... 
 
-![Precheck wizard failure](/img/blog/napp-rke2-dns-precheck-failure/precheck-failure.png)
+![NSX Application Platform installation wizard showing the DNS Domain Precheck step failed](/img/blog/napp-rke2-dns-precheck-failure/precheck-failure.png)
 
 If you just want to skip to the solution [scroll down to the TL;DR](#tldr).
 
@@ -113,7 +113,7 @@ configmap/kubeadm-config created
 ```
 
 If we run the prechecks again, voila, the DNS domain name check is now passing!
-![Precheck wizard success](/img/blog/napp-rke2-dns-precheck-failure/precheck-success.png)
+![NSX Application Platform installation wizard showing the DNS Domain Precheck step now passing](/img/blog/napp-rke2-dns-precheck-failure/precheck-success.png)
 
 ## TL;DR
 Apply the following configmap to your cluster and re-run the wizard:

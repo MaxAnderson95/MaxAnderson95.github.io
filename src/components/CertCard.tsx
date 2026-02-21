@@ -66,6 +66,7 @@ export default function CertCard({
                 viewBox="0 0 24 24"
                 className="w-5 h-5"
                 overflow="visible"
+                aria-hidden="true"
                 dangerouslySetInnerHTML={{ __html: customIconMarkup }}
               />
             ) : (
@@ -74,37 +75,38 @@ export default function CertCard({
                 viewBox="0 0 24 24"
                 className="w-5 h-5"
                 fill={issuerColor}
+                aria-hidden="true"
               >
                 <path d={iconPath ?? ""} />
               </svg>
             )}
           </div>
-          <span className="text-[13px] font-mono text-text-muted tracking-wide">
+          <span className="text-[0.8125rem] font-mono text-text-muted tracking-wide">
             {issuer}
           </span>
         </div>
 
         {/* Certification Name */}
-        <h3 className="text-lg md:text-xl font-display font-semibold text-text leading-tight group-hover:text-white transition-colors duration-300 min-h-[4.5em]">
+        <h2 className="text-lg md:text-xl font-display font-semibold text-text leading-tight group-hover:text-white transition-colors duration-300 min-h-[4.5em]">
           {name}
-        </h3>
+        </h2>
 
         {/* Divider */}
         <div className="w-full h-px bg-white/5" />
 
         {/* Dates + Status */}
         <div className="flex items-end justify-between gap-4">
-          <div className="flex flex-col gap-1.5 text-[13px] font-mono text-text-muted">
+          <div className="flex flex-col gap-1.5 text-[0.8125rem] font-mono text-text-muted">
             <span>
               <span className="text-accent/80">Achieved</span>{" "}
-              {formatCertDate(achievedDate)}
+              <time dateTime={achievedDate}>{formatCertDate(achievedDate)}</time>
             </span>
             {validUntil ? (
               <span>
                 <span className="text-text-muted">
                   Valid until
                 </span>{" "}
-                {formatCertDate(validUntil)}
+                <time dateTime={validUntil}>{formatCertDate(validUntil)}</time>
               </span>
             ) : (
               <span className="text-emerald-400/80">No Expiration</span>
@@ -113,7 +115,7 @@ export default function CertCard({
 
           {/* Status Badge — only shown when active */}
           {!isExpired && (
-            <span className="px-2.5 py-1 text-[11px] font-mono rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span className="px-2.5 py-1 text-[0.6875rem] font-mono rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               Active
             </span>
           )}
@@ -130,6 +132,7 @@ export default function CertCard({
         rel="noopener noreferrer"
         className={cardClassName}
         style={{ animationDelay: delay }}
+        aria-label={`View ${name} credential (opens in new tab)`}
       >
         {content}
       </a>

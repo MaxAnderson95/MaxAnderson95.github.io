@@ -4,9 +4,11 @@ interface Props {
   slug: string;
   title: string;
   date: string;
+  rawDate: string;
   readTime: string;
   tags: string[];
   featureImage?: string;
+  featureImageAlt?: string;
   excerpt?: string;
   index: number;
 }
@@ -15,9 +17,11 @@ export default function BlogCard({
   slug,
   title,
   date,
+  rawDate,
   readTime,
   tags,
   featureImage,
+  featureImageAlt,
   excerpt,
   index,
 }: Props) {
@@ -39,7 +43,7 @@ export default function BlogCard({
           <div className="overflow-hidden rounded-xl border border-white/10">
             <img
               src={featureImage}
-              alt={`${title} feature image`}
+              alt={featureImageAlt || `Feature image for ${title}`}
               loading="lazy"
               className="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             />
@@ -49,22 +53,22 @@ export default function BlogCard({
         {/* Top Section */}
         <div>
           {/* Metadata */}
-          <div className="flex items-center gap-3 text-[13px] font-mono tracking-wide text-text-muted mb-4">
-            <span className="text-accent/80">{date}</span>
-            <span className="w-1 h-1 rounded-full bg-white/20" />
+          <div className="flex items-center gap-3 text-[0.8125rem] font-mono tracking-wide text-text-muted mb-4">
+            <time dateTime={rawDate}>{date}</time>
+            <span className="w-1 h-1 rounded-full bg-white/20" aria-hidden="true" />
             <span>{readTime}</span>
           </div>
 
           {/* Title */}
-          <h3 className="text-xl md:text-2xl font-display font-semibold text-text leading-tight group-hover:text-white transition-colors duration-300 mb-3">
+          <h2 className="text-xl md:text-2xl font-display font-semibold text-text leading-tight group-hover:text-white transition-colors duration-300 mb-3">
             <a href={`/blog/${slug}/`} className="after:absolute after:inset-0 after:content-['']">
               {title}
             </a>
-          </h3>
+          </h2>
 
           {/* Excerpt (optional) */}
           {excerpt && (
-            <p className="text-[15px] text-text-secondary leading-relaxed line-clamp-3 font-light opacity-80 group-hover:opacity-100 transition-opacity duration-300">
+            <p className="text-[0.9375rem] text-text-secondary leading-relaxed line-clamp-3 font-light opacity-80 group-hover:opacity-100 transition-opacity duration-300">
               {excerpt}
             </p>
           )}
@@ -77,14 +81,14 @@ export default function BlogCard({
               <a
                 key={tag}
                 href={`/tags/${slugifyTag(tag)}/`}
-                className="relative z-10 px-2.5 py-1 text-[11px] font-mono text-text-secondary bg-white/5 rounded-md border border-white/5 hover:border-accent/30 hover:text-accent-light transition-colors"
+                className="relative z-10 px-2.5 py-1 text-[0.6875rem] font-mono text-text-secondary bg-white/5 rounded-md border border-white/5 hover:border-accent/30 hover:text-accent-light transition-colors"
               >
                 {tag}
               </a>
             ))}
           </div>
           
-          <div className="flex items-center gap-2 text-[13px] font-medium text-accent opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+          <div aria-hidden="true" className="flex items-center gap-2 text-[0.8125rem] font-medium text-accent opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
             Read Article
             <svg 
               className="w-4 h-4" 

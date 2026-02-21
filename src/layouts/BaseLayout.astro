@@ -51,6 +51,7 @@ const imageUrl = image ? new URL(image, siteUrl).toString() : undefined;
     <link href={googleFontUrl} rel="stylesheet" />
   </head>
   <body class="noise-overlay min-h-screen">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <div class="grid-bg" aria-hidden="true"></div>
     {/* Ambient glow - visible on all pages */}
     <div class="hero-glow opacity-60 mix-blend-screen" aria-hidden="true"></div>

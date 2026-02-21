@@ -47,29 +47,30 @@ export default function WorkTimelineCard({
         {/* Company Header */}
         <div className="flex flex-wrap items-start justify-between gap-3 mb-1">
           <div>
-            <h3 className="text-xl md:text-2xl font-display font-semibold text-text leading-tight group-hover:text-white transition-colors duration-300">
+            <h2 className="text-xl md:text-2xl font-display font-semibold text-text leading-tight group-hover:text-white transition-colors duration-300">
               {companyUrl ? (
                 <a
                   href={companyUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-accent transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+                  aria-label={`${company} (opens in new tab)`}
                 >
                   {company}
                 </a>
               ) : (
                 company
               )}
-            </h3>
-            <p className="text-[13px] font-mono text-text-muted mt-1.5 tracking-wide">
+            </h2>
+            <p className="text-[0.8125rem] font-mono text-text-muted mt-1.5 tracking-wide">
               {location}
             </p>
           </div>
 
           {/* Overall date range pill */}
-          <span className="shrink-0 px-2.5 py-1 text-[11px] font-mono rounded-md bg-accent/10 text-accent border border-accent/20 whitespace-nowrap">
-            {formatWorkDate(earliestStart)} &mdash;{" "}
-            {latestEnd ? formatWorkDate(latestEnd) : "Present"}
+          <span className="shrink-0 px-2.5 py-1 text-[0.6875rem] font-mono rounded-md bg-accent/10 text-accent border border-accent/20 whitespace-nowrap">
+            <time dateTime={earliestStart}>{formatWorkDate(earliestStart)}</time> &mdash;{" "}
+            {latestEnd ? <time dateTime={latestEnd}>{formatWorkDate(latestEnd)}</time> : "Present"}
           </span>
         </div>
 
@@ -86,18 +87,18 @@ export default function WorkTimelineCard({
             >
               {/* Position title + dates */}
               <div className="flex flex-wrap items-baseline justify-between gap-2 mb-2.5">
-                <h4 className="text-[15px] font-display font-medium text-text">
+                <h3 className="text-[0.9375rem] font-display font-medium text-text">
                   {pos.title}
-                </h4>
-                <span className="text-[12px] font-mono text-text-muted whitespace-nowrap">
-                  {formatWorkDate(pos.startDate)} &mdash;{" "}
-                  {pos.endDate ? formatWorkDate(pos.endDate) : "Present"}
+                </h3>
+                <span className="text-[0.75rem] font-mono text-text-muted whitespace-nowrap">
+                  <time dateTime={pos.startDate}>{formatWorkDate(pos.startDate)}</time> &mdash;{" "}
+                  {pos.endDate ? <time dateTime={pos.endDate}>{formatWorkDate(pos.endDate)}</time> : "Present"}
                 </span>
               </div>
 
               {/* Description */}
               {pos.description && (
-                <p className="text-[14px] text-text-secondary font-light leading-relaxed">
+                <p className="text-[0.875rem] text-text-secondary font-light leading-relaxed">
                   {pos.description}
                 </p>
               )}
@@ -108,11 +109,11 @@ export default function WorkTimelineCard({
         {/* Current role indicator */}
         {isCurrent && (
           <div className="mt-6 pt-4 border-t border-white/5 flex items-center gap-2">
-            <span className="relative flex h-2 w-2">
+            <span className="relative flex h-2 w-2" aria-hidden="true">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
             </span>
-            <span className="text-[12px] font-mono text-emerald-400">
+            <span className="text-[0.75rem] font-mono text-emerald-400">
               Current Role
             </span>
           </div>

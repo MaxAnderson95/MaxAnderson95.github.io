@@ -5,6 +5,7 @@ readTime: "10 min read"
 tags: ["DevOps", "Security", "OIDC", "Workload Identity Federation"]
 excerpt: "As a DevOps Engineer, I’m tasked with ensuring secure and efficient communication between our various cloud and SaaS services. One of the most persistent challenges I encounter..."
 featureImage: "/img/blog/workload-identity-federation-part-1/feature.png"
+featureImageAlt: "Diagram showing workload identity federation flow between cloud providers using OIDC token exchange"
 ---
 
 <p class="post-badge">New article!</p>
