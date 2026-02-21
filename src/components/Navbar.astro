@@ -55,21 +55,6 @@ interface Props {
         </li>
         <li>
           <a
-            href="/certifications/"
-            aria-current={active === "certifications" ? "page" : undefined}
-            class:list={[
-              "relative px-3 md:px-5 py-2 rounded-full text-[0.8125rem] font-medium transition-all duration-300",
-              active === "certifications" ? "text-white" : "text-text-muted hover:text-white"
-            ]}
-          >
-            {active === "certifications" && (
-              <span class="absolute inset-0 bg-white/10 rounded-full border border-white/5 shadow-inner"></span>
-            )}
-            <span class="relative z-10">Certs</span>
-          </a>
-        </li>
-        <li>
-          <a
             href="/work-history/"
             aria-current={active === "work-history" ? "page" : undefined}
             class:list={[
@@ -81,6 +66,21 @@ interface Props {
               <span class="absolute inset-0 bg-white/10 rounded-full border border-white/5 shadow-inner"></span>
             )}
             <span class="relative z-10">Work</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="/certifications/"
+            aria-current={active === "certifications" ? "page" : undefined}
+            class:list={[
+              "relative px-3 md:px-5 py-2 rounded-full text-[0.8125rem] font-medium transition-all duration-300",
+              active === "certifications" ? "text-white" : "text-text-muted hover:text-white"
+            ]}
+          >
+            {active === "certifications" && (
+              <span class="absolute inset-0 bg-white/10 rounded-full border border-white/5 shadow-inner"></span>
+            )}
+            <span class="relative z-10">Certs</span>
           </a>
         </li>
       </ul>
