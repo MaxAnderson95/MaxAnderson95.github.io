@@ -4,23 +4,31 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto border-t border-border-subtle bg-bg/50 backdrop-blur-sm">
+    <footer className="mt-auto border-t border-border">
       <div className="max-w-[1100px] mx-auto px-6 md:px-10 py-12 flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex flex-col items-center md:items-start gap-2">
           <span className="text-text font-display font-bold text-lg tracking-tight">
             Max Anderson
           </span>
-          <span className="text-text-muted text-sm font-light">
-            &copy; {year} All rights reserved.
+          <span className="text-text-muted text-sm font-mono tracking-wide">
+            &copy; {year} &middot;{" "}
+            <a
+              href="https://github.com/MaxAnderson95/MaxAnderson95.github.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-accent-light transition-colors duration-200 underline-offset-4 hover:underline"
+            >
+              source on GitHub
+            </a>
           </span>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2">
           <a
             href={siteData.socials.github.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-text-muted hover:text-white transition-colors duration-200"
+            className="inline-flex items-center justify-center min-h-11 min-w-11 text-text-muted hover:text-white rounded-full transition-colors duration-200"
             aria-label="GitHub (opens in new tab)"
           >
             <svg
@@ -43,7 +51,7 @@ export default function Footer() {
             href={siteData.socials.linkedin.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-text-muted hover:text-[#0077b5] transition-colors duration-200"
+            className="inline-flex items-center justify-center min-h-11 min-w-11 text-text-muted hover:text-[#0077b5] rounded-full transition-colors duration-200"
             aria-label="LinkedIn (opens in new tab)"
           >
             <svg
@@ -65,7 +73,7 @@ export default function Footer() {
           </a>
           <a
             href={siteData.socials.email.url}
-            className="text-text-muted hover:text-accent transition-colors duration-200"
+            className="inline-flex items-center justify-center min-h-11 min-w-11 text-text-muted hover:text-accent rounded-full transition-colors duration-200"
             aria-label="Email"
           >
             <svg

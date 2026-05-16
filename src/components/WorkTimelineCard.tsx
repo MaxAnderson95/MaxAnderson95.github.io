@@ -67,21 +67,27 @@ export default function WorkTimelineCard({
             </p>
           </div>
 
-          {/* Overall date range pill */}
-          <span className="shrink-0 px-2 py-0.5 text-[0.625rem] md:px-2.5 md:py-1 md:text-[0.6875rem] font-mono rounded-md bg-accent/10 text-accent border border-accent/20 whitespace-nowrap">
-            <time dateTime={earliestStart}>{formatWorkDate(earliestStart)}</time> &mdash;{" "}
+          {/* Overall date range pill — accent for current role, neutral for past */}
+          <span
+            className={
+              isCurrent
+                ? "shrink-0 px-2 py-0.5 text-[0.625rem] md:px-2.5 md:py-1 md:text-[0.6875rem] font-mono rounded-md bg-accent/10 text-accent border border-accent/20 whitespace-nowrap"
+                : "shrink-0 px-2 py-0.5 text-[0.625rem] md:px-2.5 md:py-1 md:text-[0.6875rem] font-mono rounded-md bg-surface text-text-secondary border border-border-subtle whitespace-nowrap"
+            }
+          >
+            <time dateTime={earliestStart}>{formatWorkDate(earliestStart)}</time> &ndash;{" "}
             {latestEnd ? <time dateTime={latestEnd}>{formatWorkDate(latestEnd)}</time> : "Present"}
           </span>
         </div>
 
         {/* Positions */}
-        <div className={isMultiPosition ? "mt-6 space-y-0" : "mt-6"}>
+        <div className="mt-6">
           {positions.map((pos, posIndex) => (
             <div
               key={posIndex}
               className={
                 isMultiPosition && posIndex > 0
-                  ? "pt-5 mt-5 border-t border-white/5"
+                  ? "pt-5 mt-5 border-t border-border-subtle"
                   : ""
               }
             >
@@ -91,7 +97,7 @@ export default function WorkTimelineCard({
                   {pos.title}
                 </h3>
                 <span className="shrink-0 text-[0.75rem] font-mono text-text-muted whitespace-nowrap">
-                  <time dateTime={pos.startDate}>{formatWorkDate(pos.startDate)}</time> &mdash;{" "}
+                  <time dateTime={pos.startDate}>{formatWorkDate(pos.startDate)}</time> &ndash;{" "}
                   {pos.endDate ? <time dateTime={pos.endDate}>{formatWorkDate(pos.endDate)}</time> : "Present"}
                 </span>
               </div>
@@ -112,12 +118,12 @@ export default function WorkTimelineCard({
 
         {/* Current role indicator */}
         {isCurrent && (
-          <div className="mt-6 pt-4 border-t border-white/5 flex items-center gap-2">
+          <div className="mt-6 pt-4 border-t border-border-subtle flex items-center gap-2">
             <span className="relative flex h-2 w-2" aria-hidden="true">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
             </span>
-            <span className="text-[0.75rem] font-mono text-emerald-400">
+            <span className="text-[0.75rem] font-mono text-accent-light tracking-wide uppercase">
               Current Role
             </span>
           </div>

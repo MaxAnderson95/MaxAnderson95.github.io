@@ -28,7 +28,7 @@ interface Props {
             href="/"
             aria-current={active === "home" ? "page" : undefined}
             class:list={[
-              "relative px-3 md:px-5 py-2 rounded-full text-[0.8125rem] font-medium transition-all duration-300",
+              "relative inline-flex items-center min-h-11 px-4 md:px-5 rounded-full text-[0.8125rem] font-medium transition-colors duration-300",
               active === "home" ? "text-white" : "text-text-muted hover:text-white"
             ]}
           >
@@ -43,7 +43,7 @@ interface Props {
             href="/blog/"
             aria-current={active === "blog" ? "page" : undefined}
             class:list={[
-              "relative px-3 md:px-5 py-2 rounded-full text-[0.8125rem] font-medium transition-all duration-300",
+              "relative inline-flex items-center min-h-11 px-4 md:px-5 rounded-full text-[0.8125rem] font-medium transition-colors duration-300",
               active === "blog" ? "text-white" : "text-text-muted hover:text-white"
             ]}
           >
@@ -58,7 +58,7 @@ interface Props {
             href="/work-history/"
             aria-current={active === "work-history" ? "page" : undefined}
             class:list={[
-              "relative px-3 md:px-5 py-2 rounded-full text-[0.8125rem] font-medium transition-all duration-300",
+              "relative inline-flex items-center min-h-11 px-4 md:px-5 rounded-full text-[0.8125rem] font-medium transition-colors duration-300",
               active === "work-history" ? "text-white" : "text-text-muted hover:text-white"
             ]}
           >
@@ -73,7 +73,7 @@ interface Props {
             href="/certifications/"
             aria-current={active === "certifications" ? "page" : undefined}
             class:list={[
-              "relative px-3 md:px-5 py-2 rounded-full text-[0.8125rem] font-medium transition-all duration-300",
+              "relative inline-flex items-center min-h-11 px-4 md:px-5 rounded-full text-[0.8125rem] font-medium transition-colors duration-300",
               active === "certifications" ? "text-white" : "text-text-muted hover:text-white"
             ]}
           >
@@ -95,7 +95,7 @@ interface Props {
         href={siteData.socials.github.url}
         target="_blank"
         rel="noopener noreferrer"
-        class="p-2 text-text-muted hover:text-accent hover:bg-white/5 rounded-full transition-all duration-200"
+        class="inline-flex items-center justify-center min-h-11 min-w-11 text-text-muted hover:text-accent hover:bg-white/5 rounded-full transition-colors duration-200"
         aria-label="GitHub (opens in new tab)"
       >
         <svg
@@ -118,7 +118,7 @@ interface Props {
         href={siteData.socials.linkedin.url}
         target="_blank"
         rel="noopener noreferrer"
-        class="p-2 text-text-muted hover:text-[#0077b5] hover:bg-white/5 rounded-full transition-all duration-200"
+        class="inline-flex items-center justify-center min-h-11 min-w-11 text-text-muted hover:text-[#0077b5] hover:bg-white/5 rounded-full transition-colors duration-200"
         aria-label="LinkedIn (opens in new tab)"
       >
         <svg
@@ -140,7 +140,7 @@ interface Props {
       </a>
       <a
         href={siteData.socials.email.url}
-        class="p-2 text-text-muted hover:text-accent hover:bg-white/5 rounded-full transition-all duration-200"
+        class="inline-flex items-center justify-center min-h-11 min-w-11 text-text-muted hover:text-accent hover:bg-white/5 rounded-full transition-colors duration-200"
         aria-label="Email"
       >
         <svg

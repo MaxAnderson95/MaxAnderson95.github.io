@@ -46,34 +46,46 @@ const resolvedCerts: ResolvedCert[] = certifications.map((cert: Certification) =
 });
 ---
 
-<BaseLayout title="Certifications — Max Anderson">
+<BaseLayout
+  title="Certifications · Max Anderson"
+  description="Cloud, Kubernetes, and platform certifications earned along the way."
+>
   <Navbar active="certifications" />
 
   <main id="main-content" tabindex="-1" class="relative z-10 max-w-[1100px] mx-auto px-6 md:px-10 pt-28 pb-20">
     {/* Header */}
     <div class="reveal mb-12" style="animation-delay: 0.15s;">
-      <h1 class="font-display font-extrabold text-[clamp(2rem,5vw,3rem)] tracking-tight leading-tight text-text">
+      <h1 class="font-display font-bold text-[clamp(2rem,5vw,3rem)] tracking-tight leading-tight text-text">
         Certifications
       </h1>
-
+      <p class="text-text-secondary text-[1.0625rem] mt-3 max-w-xl">
+        Cloud, Kubernetes, and platform certifications earned along the way.
+      </p>
     </div>
 
-    {/* Certs Grid */}
-    <div class="grid gap-4 md:grid-cols-2">
-      {resolvedCerts.map((cert, i) => (
-        <CertCard
-          name={cert.name}
-          issuer={cert.issuer}
-          issuerColor={cert.issuerColor}
-          iconPath={cert.iconPath}
-          customIconMarkup={cert.customIconMarkup}
-          achievedDate={cert.achievedDate}
-          validUntil={cert.validUntil}
-          url={cert.url}
-          index={i}
-        />
-      ))}
-    </div>
+    {resolvedCerts.length > 0 ? (
+      <div class="grid gap-6 md:gap-8 md:grid-cols-2">
+        {resolvedCerts.map((cert, i) => (
+          <CertCard
+            name={cert.name}
+            issuer={cert.issuer}
+            issuerColor={cert.issuerColor}
+            iconPath={cert.iconPath}
+            customIconMarkup={cert.customIconMarkup}
+            achievedDate={cert.achievedDate}
+            validUntil={cert.validUntil}
+            url={cert.url}
+            index={i}
+          />
+        ))}
+      </div>
+    ) : (
+      <div class="reveal py-20 text-center" style="animation-delay: 0.3s;">
+        <p class="font-mono text-sm tracking-wide text-text-muted uppercase">
+          No certifications listed yet.
+        </p>
+      </div>
+    )}
   </main>
 
   <Footer />

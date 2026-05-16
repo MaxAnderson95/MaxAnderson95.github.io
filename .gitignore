@@ -27,3 +27,6 @@ pnpm-debug.log*
 .opencode/
 
 .worktrees/
+
+# playwright session artifacts
+.playwright-mcp/

@@ -46,7 +46,7 @@ export default function CertCard({
   const delay = `${0.15 + index * 0.1}s`;
   const isExpired = validUntil ? validUntil < getTodayIsoDate() : false;
 
-  const cardClassName = `reveal group relative block w-full h-full p-8 rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] border border-white/5 hover:border-white/10 bg-surface/40 backdrop-blur-md${url ? " cursor-pointer" : ""}`;
+  const cardClassName = `reveal group relative block w-full h-full p-8 rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] border border-border-subtle hover:border-border bg-surface/40 backdrop-blur-md${url ? " cursor-pointer" : ""}`;
 
   const content = (
     <>
@@ -57,7 +57,7 @@ export default function CertCard({
         {/* Icon + Issuer */}
         <div className="flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-xl flex items-center justify-center border border-white/5"
+            className="w-10 h-10 rounded-xl flex items-center justify-center border border-border-subtle"
             style={{ backgroundColor: `${issuerColor}15` }}
           >
             {customIconMarkup ? (
@@ -87,12 +87,12 @@ export default function CertCard({
         </div>
 
         {/* Certification Name */}
-        <h2 className="text-lg md:text-xl font-display font-semibold text-text leading-tight group-hover:text-white transition-colors duration-300 min-h-[4.5em]">
+        <h2 className="text-lg md:text-xl font-display font-semibold text-text leading-tight min-h-[4.5em]">
           {name}
         </h2>
 
         {/* Divider */}
-        <div className="w-full h-px bg-white/5" />
+        <div className="w-full h-px bg-border-subtle" />
 
         {/* Dates + Status */}
         <div className="flex items-end justify-between gap-4">
@@ -103,20 +103,18 @@ export default function CertCard({
             </span>
             {validUntil ? (
               <span>
-                <span className="text-text-muted">
-                  Valid until
-                </span>{" "}
+                <span className="text-text-muted">Valid until</span>{" "}
                 <time dateTime={validUntil}>{formatCertDate(validUntil)}</time>
               </span>
             ) : (
-              <span className="text-emerald-400/80">No Expiration</span>
+              <span className="text-text-muted">No expiration</span>
             )}
           </div>
 
-          {/* Status Badge — only shown when active */}
-          {!isExpired && (
-            <span className="px-2.5 py-1 text-[0.6875rem] font-mono rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              Active
+          {/* Status badge — only shown when expired (exception state) */}
+          {isExpired && (
+            <span className="px-2.5 py-1 text-[0.6875rem] font-mono tracking-wide uppercase rounded-md bg-surface text-text-muted border border-border">
+              Expired
             </span>
           )}
         </div>

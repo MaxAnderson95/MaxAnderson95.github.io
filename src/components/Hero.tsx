@@ -1,3 +1,4 @@
+import { useState } from "react";
 import TypeIt from "typeit-react";
 
 interface Props {
@@ -16,6 +17,16 @@ interface ParsedRole {
 export default function Hero({ name, bio, roles }: Props) {
   const engineerRegex = /\bengineer\b/i;
   const rolePauseMs = 2000;
+  const [firstName, ...rest] = name.split(" ");
+  const lastName = rest.join(" ");
+
+  // Lazy initializer: reads once on first render. SSR returns false (no window),
+  // client returns the actual preference. No post-mount setState so TypeIt's
+  // getBeforeInit queue is never disturbed by a re-render.
+  const [prefersReducedMotion] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  });
 
   const parsedRoles: ParsedRole[] = roles.map((role) => {
     const match = role.match(engineerRegex);
@@ -46,72 +57,69 @@ export default function Hero({ name, bio, roles }: Props) {
         <div className="flex flex-col-reverse md:flex-row md:items-center md:justify-between gap-12 md:gap-24">
           {/* ===== Left column — text ===== */}
           <div className="flex-1 min-w-0">
-            {/* Greeting + Name */}
+            {/* Name */}
              <div className="reveal" style={{ animationDelay: "0.15s" }}>
-              <h1 className="font-display font-bold tracking-tight leading-[1.1] text-[2.5rem] md:text-[clamp(3.5rem,7vw,5.5rem)] pb-2 md:whitespace-nowrap">
-                <span className="text-text">Hey, I'm </span>
-                <span className="text-accent">{name.split(" ")[0]}</span>
-                <span
-                  className="inline-block animate-[wave_2.5s_ease-in-out_infinite] origin-[70%_70%] ml-2 md:ml-4 text-white align-baseline"
-                  role="img"
-                  aria-label="waving hand"
-                >
-                  👋
-                </span>
+              <h1 className="font-display font-bold tracking-tight leading-[1.05] text-[2.5rem] md:text-[clamp(3.5rem,7vw,5.5rem)] md:whitespace-nowrap">
+                <span className="text-accent">{firstName}</span>
+                {lastName && <span className="text-text"> {lastName}</span>}
               </h1>
             </div>
 
-            {/* TypeIt roles */}
+            {/* Roles */}
             <div
               className="reveal mt-4 pl-1"
               style={{ animationDelay: "0.35s" }}
             >
               <span className="sr-only">{roles.join(", ")}</span>
               <div aria-hidden="true" className="text-[clamp(1.2rem,3vw,1.75rem)] font-body font-light text-accent min-h-[1.4em] flex items-center gap-3">
-                <TypeIt
-                  options={{
-                    speed: 50,
-                    deleteSpeed: 33,
-                    breakLines: false,
-                    loop: true,
-                    waitUntilVisible: true,
-                    lifeLike: true,
-                    cursor: true,
-                    cursorChar: "_",
-                  }}
-                  getBeforeInit={(instance) => {
-                    if (!parsedRoles.length) {
-                      return instance;
-                    }
-
-                    instance.type(parsedRoles[0].role);
-
-                    if (parsedRoles.length === 1) {
-                      instance.pause(rolePauseMs);
-                      return instance;
-                    }
-
-                    parsedRoles.slice(0, -1).forEach((currentRole, index) => {
-                      const nextRole = parsedRoles[index + 1];
-
-                      instance.pause(rolePauseMs);
-
-                      if (currentRole.hasEngineerAtEnd && nextRole.hasEngineerAtEnd) {
-                        instance
-                          .move(-currentRole.engineer.length)
-                          .delete(currentRole.prefix.length)
-                          .type(nextRole.prefix)
-                          .move(null, { to: "END" });
-                      } else {
-                        instance.delete(currentRole.role.length).type(nextRole.role);
+                {prefersReducedMotion ? (
+                  <span>{parsedRoles[0]?.role ?? ""}</span>
+                ) : (
+                  <TypeIt
+                    options={{
+                      speed: 50,
+                      deleteSpeed: 33,
+                      breakLines: false,
+                      loop: true,
+                      waitUntilVisible: true,
+                      lifeLike: true,
+                      cursor: true,
+                      cursorChar: "_",
+                    }}
+                    getBeforeInit={(instance) => {
+                      if (!parsedRoles.length) {
+                        return instance;
                       }
-                    });
 
-                    instance.pause(rolePauseMs);
+                      instance.type(parsedRoles[0].role);
 
-                    return instance;
-                  }}
-                />
+                      if (parsedRoles.length === 1) {
+                        instance.pause(rolePauseMs);
+                        return instance;
+                      }
+
+                      parsedRoles.slice(0, -1).forEach((currentRole, index) => {
+                        const nextRole = parsedRoles[index + 1];
+
+                        instance.pause(rolePauseMs);
+
+                        if (currentRole.hasEngineerAtEnd && nextRole.hasEngineerAtEnd) {
+                          instance
+                            .move(-currentRole.engineer.length)
+                            .delete(currentRole.prefix.length)
+                            .type(nextRole.prefix)
+                            .move(null, { to: "END" });
+                        } else {
+                          instance.delete(currentRole.role.length).type(nextRole.role);
+                        }
+                      });
+
+                      instance.pause(rolePauseMs);
+
+                      return instance;
+                    }}
+                  />
+                )}
               </div>
             </div>
 
@@ -135,7 +143,7 @@ export default function Hero({ name, bio, roles }: Props) {
                 href="/blog/"
                 className="group relative inline-flex items-center gap-3 px-7 py-3.5 rounded-full bg-accent text-white font-semibold text-[0.9375rem] transition-all duration-300 hover:scale-[1.03] overflow-hidden shadow-[0_0_20px_rgba(255,107,0,0.4)] hover:shadow-[0_0_30px_rgba(255,107,0,0.6)]"
               >
-                <span className="relative z-10">Read my blog</span>
+                <span className="relative z-10">Read the writing</span>
                 <svg
                   className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 relative z-10"
                   viewBox="0 0 24 24"
