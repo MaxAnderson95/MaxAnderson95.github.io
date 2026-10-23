@@ -1,0 +1,67 @@
+---
+// One row per role on a shared year axis, grouped under each company, oldest
+// first, so every title sits on its own bar.
+import { workHistory } from "../data/work-history";
+
+const toMonths = (iso: string) => {
+  const [year, month] = iso.split("-").map(Number);
+  return year * 12 + (month - 1);
+};
+
+const now = new Date();
+const nowMonths = now.getFullYear() * 12 + now.getMonth();
+const firstYear = Math.min(
+  ...workHistory.flatMap((entry) => entry.positions.map((pos) => Number(pos.startDate.slice(0, 4))))
+);
+const lastYear = now.getFullYear() + 1;
+const origin = firstYear * 12;
+const span = lastYear * 12 - origin;
+const pct = (months: number) => ((months - origin) / span) * 100;
+
+const years = Array.from({ length: lastYear - firstYear + 1 }, (_, i) => firstYear + i);
+
+const companies = workHistory
+  .map((entry) => {
+    const roles = [...entry.positions].reverse().map((pos) => {
+      const start = pct(toMonths(pos.startDate));
+      const end = pct(pos.endDate ? toMonths(pos.endDate) : nowMonths);
+      return { title: pos.title, start, width: end - start, labelBefore: end > 72 };
+    });
+    return {
+      company: entry.company,
+      years: `${entry.positions.at(-1)!.startDate.slice(0, 4)} to ${entry.positions[0].endDate?.slice(0, 4) ?? "now"}`,
+      start: roles[0].start,
+      roles,
+    };
+  })
+  .sort((a, b) => a.start - b.start);
+---
+
+<figure class="ruler" style={`--year-count: ${years.length - 1};`}>
+  <ol role="list" class="ruler__companies">
+    {companies.map((c, i) => (
+      <li class="ruler__company-group" style={`--company: var(--color-company-${((companies.length - 1 - i) % 3) + 1});`}>
+        <p class="ruler__company" style={`--start: ${c.start.toFixed(3)}%;`}>
+          {c.company} <span class="ruler__years">{c.years}</span>
+        </p>
+        <ol role="list" class="ruler__roles">
+          {c.roles.map((role) => (
+            <li
+              class="ruler__role"
+              data-label={role.labelBefore ? "before" : "after"}
+              style={`--start: ${role.start.toFixed(3)}%; --width: ${role.width.toFixed(3)}%;`}
+            >
+              <span class="ruler__bar" aria-hidden="true"></span>
+              <span class="ruler__title">{role.title}</span>
+            </li>
+          ))}
+        </ol>
+      </li>
+    ))}
+  </ol>
+  <div class="ruler__axis" aria-hidden="true">
+    {years.map((year) => (
+      <span class="ruler__year" style={`--left: ${pct(year * 12).toFixed(3)}%;`}>{year}</span>
+    ))}
+  </div>
+</figure>

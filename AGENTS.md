@@ -104,8 +104,8 @@ The `dist/` directory is gitignored and must never be committed.
 - **Custom properties:** Kebab-case (`--color-accent`, `--font-display`)
 - **Class naming:** BEM-like with double dashes for modifiers (`photo-bracket--tl`)
 - **Section organization:** Separated by `/* ===== Section Name ===== */` comments
-- **Color scheme:** Dark theme with zinc backgrounds (`#09090b`), orange accent (`#f97316`)
-- **Fonts:** "Clash Display" (headings), "DM Sans" (body), "JetBrains Mono" (code)
+- **Tokens:** Colours, fonts and the type and spacing scales live in `src/styles/tokens.css`; element defaults in `src/styles/base.css` (scaffolded from Hallmark's Cobalt theme). `global.css` opens with a Hallmark stamp comment block; keep it first.
+- **Fonts:** "Familjen Grotesk" (headings, labels), "IBM Plex Sans" (body), "JetBrains Mono" (code and the hero field)
 
 ### Blog Content (Markdown)
 
@@ -131,7 +131,7 @@ draft: true                                    # optional, hides in production
 ### Naming Conventions
 
 - **Files:** Kebab-case for content/pages (`workload-identity-federation-part-1.md`)
-- **Components:** PascalCase for component files (`BlogCard.tsx`, `GridRunners.astro`)
+- **Components:** PascalCase for component files (`BlogCard.tsx`, `Navbar.astro`)
 - **Functions/variables:** camelCase (`formatDate`, `sortedPosts`)
 - **CSS classes:** Kebab-case / BEM-like (`hero-glow`, `photo-bracket--tl`)
 - **Types/interfaces:** PascalCase (`BlogPost`, `Props`)
@@ -153,7 +153,7 @@ draft: true                                    # optional, hides in production
 
 - **Static output only** (`output: 'static'` in astro.config.mjs) -- no SSR
 - **Tailwind v4 via Vite plugin** (`@tailwindcss/vite`), not PostCSS
-- **React hydration:** All React components use `client:idle` for deferred hydration
+- **React hydration:** The current components render to static HTML with no client directive; use `client:idle` only when a component needs interactivity
 - **Content collections:** Blog posts use Astro's glob-based content loader with Zod validation
 - **Shiki code highlighting:** Theme is `github-dark` (configured in `astro.config.mjs`)
-- **Single layout:** All pages use `BaseLayout.astro` which includes font loading, background effects (grid, vignette, noise), and the content slot
+- **Single layout:** All pages use `BaseLayout.astro` which includes font loading, the skip link, and the content slot

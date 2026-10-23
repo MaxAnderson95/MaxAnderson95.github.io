@@ -1,6 +1,6 @@
 export const siteData = {
   name: "Max Anderson",
-  bio: "Senior engineer with a decade in infrastructure: from traditional IT through to cloud-native platforms, focused on Kubernetes, Azure, and the patterns that hold up in production.",
+  bio: "A decade in infrastructure, from traditional IT to cloud-native platforms. These days I work on Kubernetes, Azure, and the patterns that hold up in production.",
   socials: {
     github: {
       url: "https://github.com/MaxAnderson95",

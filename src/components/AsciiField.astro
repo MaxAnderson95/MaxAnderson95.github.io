@@ -1,0 +1,205 @@
+---
+// Unsorted packets thicken toward a spine, then leave it as one lane per item,
+// each lane labelled with its real count. With rawAfter set and no lanes, the
+// field starts after that element of the parent and thickens to the right edge.
+interface Lane {
+  label: string;
+  count: number;
+}
+
+interface Props {
+  lanes?: Lane[];
+  /** Singular noun for a lane's count, such as "post" */
+  unit?: string;
+  /** Selector, within the parent, of the element the raw field starts after */
+  rawAfter?: string;
+}
+
+const { lanes = [], unit = "", rawAfter } = Astro.props;
+---
+
+<div class="field" data-field data-lanes={JSON.stringify(lanes)} data-unit={unit}
+  data-raw-after={rawAfter}
+  aria-hidden="true"
+>
+  <canvas class="field__canvas"></canvas>
+</div>
+
+<script>
+  interface Lane {
+    label: string;
+    count: number;
+  }
+
+  const CELL_W = 8;
+  const CELL_H = 16;
+  const RAMP = " .:-=+*#%@";
+  const FRAME_MS = 1000 / 30;
+  const LENS_RADIUS = 96;
+
+  function initField(root: HTMLElement) {
+    const canvas = root.querySelector("canvas");
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+
+    const lanes: Lane[] = JSON.parse(root.dataset.lanes ?? "[]");
+    const unit = root.dataset.unit ?? "";
+    const styles = getComputedStyle(root);
+    const tints = [1, 2, 3, 4].map((i) => styles.getPropertyValue(`--color-glyph-${i}`).trim());
+    const deep = styles.getPropertyValue("--color-accent-deep").trim();
+    const labelInk = styles.getPropertyValue("--color-ink-2").trim();
+    const countInk = styles.getPropertyValue("--color-muted").trim();
+    const mono = styles.getPropertyValue("--font-outlier").trim();
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let cols = 0;
+    let rows = 0;
+    let width = 0;
+    let height = 0;
+    let laneRows: number[] = [];
+    let anchoredStart: number | null = null;
+    const scope = root.parentElement ?? root;
+    let pointer: { x: number; y: number } | null = null;
+    let running = false;
+    let last = 0;
+    let raf = 0;
+
+    function resize() {
+      const rect = root.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = rect.width;
+      height = rect.height;
+      canvas!.width = Math.round(width * dpr);
+      canvas!.height = Math.round(height * dpr);
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cols = Math.ceil(width / CELL_W);
+      rows = Math.ceil(height / CELL_H);
+      const top = Math.round(rows * 0.18);
+      const span = Math.max(1, Math.round(rows * 0.64));
+      laneRows = lanes.map((_, i) => top + Math.round(((i + 0.5) / lanes.length) * span));
+
+      const after = root.dataset.rawAfter ? scope.querySelector(root.dataset.rawAfter) : null;
+      anchoredStart = after ? Math.round((after.getBoundingClientRect().right - rect.left) / CELL_W) + 4 : null;
+    }
+
+    function noise(x: number, y: number, t: number) {
+      const a = Math.sin(x * 0.11 + t * 0.7 + Math.sin(y * 0.23 + t * 0.4) * 1.9);
+      const b = Math.cos(y * 0.17 - t * 0.5 + Math.sin(x * 0.07 - t * 0.2) * 2.3);
+      return (a * b + 1) / 2;
+    }
+
+    function draw(t: number) {
+      ctx!.clearRect(0, 0, width, height);
+      ctx!.font = `12px ${mono}`;
+      ctx!.textBaseline = "top";
+
+      const narrow = width < 960;
+      const hasLanes = lanes.length > 0;
+      const rawStart = narrow ? 0 : (anchoredStart ?? cols * 0.42);
+      const spine = narrow || !hasLanes ? cols : Math.round(cols * 0.66);
+      const labelWidth = Math.max(0, ...lanes.map((l) => l.label.length + String(l.count).length + unit.length + 3));
+      const labelCol = cols - labelWidth - 1;
+      const gain = narrow ? 0.45 : 1;
+      const spineTop = laneRows[0] - 2;
+      const spineBottom = laneRows[laneRows.length - 1] + 2;
+
+      for (let r = 0; r < rows; r++) {
+        const laneIndex = laneRows.indexOf(r);
+        for (let c = 0; c < cols; c++) {
+          let v = 0;
+          let glyph = "";
+
+          if (c >= rawStart && c < spine) {
+            const w = (c - rawStart) / (spine - rawStart);
+            const edge = Math.min(1, w / 0.2);
+            v = Math.pow(noise(c, r, t), 1.8) * (0.2 + w * 0.95) * edge;
+          }
+
+          if (!narrow && hasLanes && c === spine && r >= spineTop && r <= spineBottom) {
+            v = 0.7;
+            glyph = laneIndex === -1 ? "|" : "+";
+          }
+
+          if (!narrow && laneIndex !== -1 && c > spine && c < labelCol - 1) {
+            const lane = lanes[laneIndex];
+            const period = 18 + (laneIndex % 3) * 5;
+            const phase = (c - t * (7 + lane.count * 1.5) + laneIndex * 11) % period;
+            const packet = ((phase + period) % period) < 3 + lane.count;
+            v = packet ? 0.95 : 0.3;
+            glyph = packet ? "" : "-";
+          }
+
+          if (pointer && c < spine) {
+            const d = Math.hypot(c * CELL_W - pointer.x, r * CELL_H - pointer.y);
+            if (d < LENS_RADIUS && c >= rawStart) v += (1 - d / LENS_RADIUS) * 0.45;
+          }
+
+          v *= gain;
+          if (v < 0.08) continue;
+          glyph ||= RAMP[Math.min(RAMP.length - 1, Math.floor(v * RAMP.length))];
+          ctx!.fillStyle = v > 0.9 ? deep : tints[Math.min(3, Math.floor(v * 4))];
+          ctx!.fillText(glyph, c * CELL_W, r * CELL_H);
+        }
+      }
+
+      if (narrow) return;
+      lanes.forEach((lane, i) => {
+        const y = laneRows[i] * CELL_H;
+        const x = labelCol * CELL_W;
+        ctx!.fillStyle = labelInk;
+        ctx!.fillText(lane.label, x, y);
+        ctx!.fillStyle = countInk;
+        ctx!.fillText(`${lane.count} ${unit}${lane.count === 1 ? "" : "s"}`, x + (lane.label.length + 1) * 7.2, y);
+      });
+    }
+
+    function frame(now: number) {
+      if (!running) return;
+      raf = requestAnimationFrame(frame);
+      if (now - last < FRAME_MS) return;
+      last = now;
+      draw(now / 1000);
+    }
+
+    function start() {
+      if (still || running) return;
+      running = true;
+      raf = requestAnimationFrame(frame);
+    }
+
+    function stop() {
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+
+    resize();
+    draw(4);
+    root.classList.add("field--live");
+
+    new ResizeObserver(() => {
+      resize();
+      draw(still ? 4 : performance.now() / 1000);
+    }).observe(root);
+
+    document.fonts.ready.then(() => {
+      resize();
+      draw(still ? 4 : performance.now() / 1000);
+    });
+
+    if (still) return;
+
+    new IntersectionObserver(([entry]) => (entry.isIntersecting ? start() : stop())).observe(root);
+    document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
+
+    const hero = root.parentElement ?? root;
+    hero.addEventListener("pointermove", (event) => {
+      const rect = root.getBoundingClientRect();
+      pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    });
+    hero.addEventListener("pointerleave", () => {
+      pointer = null;
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-field]").forEach(initField);
+</script>

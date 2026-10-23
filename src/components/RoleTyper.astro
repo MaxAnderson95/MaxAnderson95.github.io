@@ -1,0 +1,85 @@
+---
+// Types each role once, keeping the shared "Engineer" suffix in place and
+// retyping only the words in front of it, then settles on the first role.
+interface Props {
+  roles: string[];
+}
+
+const { roles } = Astro.props;
+---
+
+<div class="roles" data-roles={JSON.stringify(roles)}>
+  <ul role="list" class="roles__list">
+    {roles.map((role) => <li>{role}</li>)}
+  </ul>
+  <button type="button" class="roles__typer" aria-label="Replay job titles">
+    <span class="roles__text" aria-hidden="true">{roles[0]}</span><span class="roles__caret" aria-hidden="true"></span>
+  </button>
+</div>
+
+<script>
+  const TYPE_MS = 55;
+  const DELETE_MS = 35;
+  const HOLD_MS = 1100;
+
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  function sharedSuffix(a: string, b: string) {
+    const aWords = a.split(" ");
+    const bWords = b.split(" ");
+    let n = 0;
+    while (n < aWords.length && n < bWords.length && aWords.at(-1 - n) === bWords.at(-1 - n)) n++;
+    return n ? " " + aWords.slice(-n).join(" ") : "";
+  }
+
+  function initTyper(root: HTMLElement) {
+    const roles: string[] = JSON.parse(root.dataset.roles ?? "[]");
+    const button = root.querySelector<HTMLButtonElement>(".roles__typer");
+    const text = root.querySelector<HTMLElement>(".roles__text");
+    if (!button || !text || roles.length < 2) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let run = 0;
+
+    async function setText(target: string, keep: string, id: number) {
+      const current = text!.textContent ?? "";
+      const head = current.slice(0, current.length - keep.length);
+      const nextHead = target.slice(0, target.length - keep.length);
+
+      for (let i = head.length; i >= 0; i--) {
+        if (id !== run) return false;
+        text!.textContent = head.slice(0, i) + keep;
+        await sleep(DELETE_MS);
+      }
+      for (let i = 1; i <= nextHead.length; i++) {
+        if (id !== run) return false;
+        text!.textContent = nextHead.slice(0, i) + keep;
+        await sleep(TYPE_MS);
+      }
+      return true;
+    }
+
+    async function play() {
+      const id = ++run;
+      root.classList.add("roles--typing");
+      button!.disabled = true;
+      text!.textContent = "";
+      const sequence = [...roles, roles[0]];
+      let previous = "";
+
+      for (const [i, role] of sequence.entries()) {
+        if (!(await setText(role, sharedSuffix(previous, role), id))) return;
+        previous = role;
+        if (i < sequence.length - 1) await sleep(HOLD_MS);
+      }
+
+      root.classList.remove("roles--typing");
+      button!.disabled = false;
+    }
+
+    button.addEventListener("click", play);
+    play();
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-roles]").forEach(initTyper);
+</script>

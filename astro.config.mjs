@@ -13,6 +13,7 @@ export default defineConfig({
   integrations: [
     expressiveCode({
       themes: ['github-dark'],
+      minSyntaxHighlightingColorContrast: 7,
       plugins: [
         // @ts-expect-error Types mismatch between expressive-code versions
         pluginFileIcons(),
@@ -23,15 +24,15 @@ export default defineConfig({
       styleOverrides: {
         borderRadius: '0.5rem',
         borderWidth: '1px',
-        borderColor: 'var(--color-border)',
-        codeBackground: '#080808',
+        borderColor: 'var(--color-rule)',
+        codeBackground: '#121823',
         frames: {
           editorActiveTabBackground: 'transparent',
           editorActiveTabBorderColor: 'transparent',
           editorTabBarBackground: 'transparent',
-          editorTabBarBorderBottomColor: 'var(--color-border)',
+          editorTabBarBorderBottomColor: 'var(--color-rule)',
           terminalTitlebarBackground: 'transparent',
-          terminalTitlebarBorderBottomColor: 'var(--color-border)',
+          terminalTitlebarBorderBottomColor: 'var(--color-rule)',
         }
       }
     }),

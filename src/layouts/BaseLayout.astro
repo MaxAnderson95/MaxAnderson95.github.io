@@ -1,22 +1,20 @@
 ---
-import GridRunners from "../components/GridRunners.astro";
+import EmailMenu from "../components/EmailMenu.astro";
 
 interface Props {
   title?: string;
   description?: string;
   image?: string;
-  showRunners?: boolean;
 }
 
 const {
   title = "Max Anderson · Senior Engineer",
   description = "Senior engineer's notes on Kubernetes, Azure, and cloud-native infrastructure.",
   image,
-  showRunners = false,
 } = Astro.props;
 
 const googleFontUrl =
-  "https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap";
+  "https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap";
 
 const siteUrl = Astro.site ?? new URL("https://maxanderson.tech");
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
@@ -50,16 +48,12 @@ const imageUrl = image ? new URL(image, siteUrl).toString() : undefined;
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href={googleFontUrl} rel="stylesheet" />
   </head>
-  <body class="noise-overlay min-h-screen">
+  <body>
     <a href="#main-content" class="skip-link">Skip to main content</a>
-    <div class="grid-bg" aria-hidden="true"></div>
-    {/* Ambient glow - visible on all pages */}
-    <div class="hero-glow opacity-60 mix-blend-screen" aria-hidden="true"></div>
-    {showRunners && <GridRunners />}
-    <div class="vignette" aria-hidden="true"></div>
-    <div style="position: relative; z-index: 10;" class="flex flex-col min-h-screen overflow-x-hidden">
+    <div class="flex flex-col min-h-svh">
       <slot />
     </div>
+    <EmailMenu />
   </body>
 </html>
 
