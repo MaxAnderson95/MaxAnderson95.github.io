@@ -10,7 +10,8 @@ const target = "/blog/";
     <link rel="canonical" href={target} />
     <meta name="robots" content="noindex" />
     <script is:inline>{`window.location.replace("${target}");`}</script>
-    <title>Redirecting...</title>
+    <title>Redirecting…</title>
+    <style is:global>html, body { overflow-x: clip; }</style>
   </head>
   <body>
     <p>Redirecting to <a href={target}>{target}</a>.</p>

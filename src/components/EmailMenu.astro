@@ -1,0 +1,125 @@
+---
+// One shared popover for every mailto link marked data-email-menu. Without
+// script the links stay plain mailto links.
+import { siteData } from "../data/site";
+
+const address = siteData.socials.email.url.replace("mailto:", "");
+---
+
+<div id="email-menu" class="email-menu cut" popover data-address={address}>
+  <p class="email-menu__address">{address}</p>
+  <button type="button" class="email-menu__item" data-copy>
+    <span class="email-menu__icons" aria-hidden="true">
+      <svg class="email-menu__copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="14" height="14" x="8" y="8" rx="2" />
+        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+      </svg>
+      <svg class="email-menu__check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 6 9 17l-5-5" />
+      </svg>
+    </span>
+    <span data-copy-label>Copy address</span>
+  </button>
+  <a class="email-menu__item" href={siteData.socials.email.url}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect width="20" height="16" x="2" y="4" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </svg>
+    Open in mail app
+  </a>
+  <p class="email-menu__status" role="status"></p>
+</div>
+
+<script>
+  const GAP = 8;
+  const RESET_MS = 2000;
+
+  const menu = document.getElementById("email-menu");
+  const copy = menu?.querySelector<HTMLButtonElement>("[data-copy]");
+  const copyLabel = menu?.querySelector<HTMLElement>("[data-copy-label]");
+  const status = menu?.querySelector<HTMLElement>(".email-menu__status");
+
+  if (menu && copy && copyLabel && status && "showPopover" in menu) {
+    const address = menu.dataset.address ?? "";
+    let trigger: HTMLElement | null = null;
+    let openOnPress = false;
+    let resetTimer = 0;
+
+    function setLabel(text: string, copied: boolean) {
+      copyLabel!.textContent = text;
+      copy!.classList.toggle("is-copied", copied);
+      copyLabel!.classList.remove("email-menu__label--swap");
+      void copyLabel!.offsetWidth;
+      copyLabel!.classList.add("email-menu__label--swap");
+    }
+
+    function place(anchor: HTMLElement) {
+      const box = anchor.getBoundingClientRect();
+      const width = menu!.offsetWidth;
+      const height = menu!.offsetHeight;
+      const left = Math.min(Math.max(GAP, box.left), window.innerWidth - width - GAP);
+      const below = box.bottom + GAP;
+      const top = below + height > window.innerHeight - GAP ? box.top - height - GAP : below;
+      menu!.style.left = `${left}px`;
+      menu!.style.top = `${Math.max(GAP, top)}px`;
+    }
+
+    document.querySelectorAll<HTMLAnchorElement>("a[data-email-menu]").forEach((link) => {
+      link.setAttribute("aria-haspopup", "true");
+      link.setAttribute("aria-controls", "email-menu");
+      link.setAttribute("aria-expanded", "false");
+      link.setAttribute("role", "button");
+
+      // Light dismiss closes the menu on pointerdown, before this click lands.
+      link.addEventListener("pointerdown", () => {
+        openOnPress = menu.matches(":popover-open") && trigger === link;
+      });
+
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        const wasOpen = openOnPress || (menu.matches(":popover-open") && trigger === link);
+        openOnPress = false;
+        if (wasOpen) {
+          if (menu.matches(":popover-open")) menu.hidePopover();
+          return;
+        }
+        trigger = link;
+        menu.showPopover();
+        place(link);
+        copy.focus();
+      });
+    });
+
+    menu.addEventListener("toggle", (event) => {
+      const open = (event as ToggleEvent).newState === "open";
+      trigger?.setAttribute("aria-expanded", String(open));
+      if (!open) {
+        clearTimeout(resetTimer);
+        copy.classList.remove("is-copied");
+        copyLabel.classList.remove("email-menu__label--swap");
+        copyLabel.textContent = "Copy address";
+        status.textContent = "";
+        if (menu.contains(document.activeElement)) trigger?.focus();
+      }
+    });
+
+    copy.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(address);
+        setLabel("Copied", true);
+        status.textContent = "Email address copied to the clipboard.";
+        clearTimeout(resetTimer);
+        resetTimer = window.setTimeout(() => setLabel("Copy address", false), RESET_MS);
+      } catch {
+        setLabel("Blocked, select the address above", false);
+        status.textContent = "Your browser blocked the clipboard. Select the address above to copy it.";
+      }
+    });
+
+    const follow = () => {
+      if (trigger && menu.matches(":popover-open")) place(trigger);
+    };
+    window.addEventListener("resize", follow);
+    window.addEventListener("scroll", follow, { passive: true });
+  }
+</script>

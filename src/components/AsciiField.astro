@@ -1,0 +1,230 @@
+---
+// Unsorted packets thicken toward a spine, then leave it as one lane per item,
+// each lane labelled, with its real count when it has one. Drawn in square
+// pixels in the night blues, dithering in from the text on the left and out
+// along the bottom. With rawAfter set and no lanes, the field starts after
+// that element of the parent and thickens to the right edge.
+interface Lane {
+  label: string;
+  /** Shown beside the label, and sets how busy the lane is */
+  count?: number;
+}
+
+interface Props {
+  lanes?: Lane[];
+  /** Singular noun for a lane's count, such as "post" */
+  unit?: string;
+  /** Selector, within the parent, of the element the raw field starts after */
+  rawAfter?: string;
+}
+
+const { lanes = [], unit = "", rawAfter } = Astro.props;
+---
+
+<div class="field" data-field data-lanes={JSON.stringify(lanes)} data-unit={unit}
+  data-raw-after={rawAfter}
+  aria-hidden="true"
+>
+  <canvas class="field__canvas"></canvas>
+</div>
+
+<script>
+  interface Lane {
+    label: string;
+    count?: number;
+  }
+
+  const PX = 5;
+  const FRAME_MS = 1000 / 30;
+  const LENS_RADIUS = 96;
+  // Pixel columns over which the field dithers in beside the text, and pixel
+  // rows over which it dithers out at the bottom.
+  const FADE_IN = 36;
+  const FADE_OUT = 24;
+  const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
+  const bayer = (x: number, y: number) => BAYER[(x & 3) + (y & 3) * 4];
+
+  function hash(x: number, y: number) {
+    const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+    return h - Math.floor(h);
+  }
+
+  function noise(x: number, y: number, t: number) {
+    const a = Math.sin(x * 0.11 + t * 0.7 + Math.sin(y * 0.23 + t * 0.4) * 1.9);
+    const b = Math.cos(y * 0.17 - t * 0.5 + Math.sin(x * 0.07 - t * 0.2) * 2.3);
+    return (a * b + 1) / 2;
+  }
+
+  function initField(root: HTMLElement) {
+    const canvas = root.querySelector("canvas");
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+
+    const lanes: Lane[] = JSON.parse(root.dataset.lanes ?? "[]");
+    const unit = root.dataset.unit ?? "";
+    const styles = getComputedStyle(root);
+    const token = (name: string) => styles.getPropertyValue(name).trim();
+    // Density steps from the darkest visible blue to white.
+    const SHADES = [2, 3, 4, 5, 6, 7].map((k) => token(`--color-night-${k}`));
+    const labelInk = token("--color-ink-2");
+    const countInk = token("--color-muted");
+    const mono = token("--font-outlier");
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let cols = 0;
+    let rows = 0;
+    let width = 0;
+    let height = 0;
+    let laneRows: number[] = [];
+    let anchoredStart: number | null = null;
+    let shadeAt = new Int8Array(0);
+    const scope = root.parentElement ?? root;
+    let pointer: { x: number; y: number } | null = null;
+    let running = false;
+    let last = 0;
+    let raf = 0;
+
+    function resize() {
+      const rect = root.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = rect.width;
+      height = rect.height;
+      canvas!.width = Math.round(width * dpr);
+      canvas!.height = Math.round(height * dpr);
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cols = Math.ceil(width / PX);
+      rows = Math.ceil(height / PX);
+      shadeAt = new Int8Array(cols * rows);
+      const top = Math.round(rows * 0.2);
+      const span = Math.max(1, Math.round(rows * 0.6));
+      laneRows = lanes.map((_, i) => top + Math.round(((i + 0.5) / lanes.length) * span));
+
+      const after = root.dataset.rawAfter ? scope.querySelector(root.dataset.rawAfter) : null;
+      anchoredStart = after ? Math.round((after.getBoundingClientRect().right - rect.left) / PX) + 6 : null;
+    }
+
+    function draw(t: number) {
+      const narrow = width < 960;
+      const hasLanes = lanes.length > 0;
+      const rawStart = narrow ? 0 : (anchoredStart ?? Math.round(cols * 0.42));
+      const spine = narrow || !hasLanes ? cols : Math.round(cols * 0.66);
+      ctx!.font = `12px ${mono}`;
+      const countText = (lane: Lane) => (lane.count === undefined ? "" : `${lane.count} ${unit}${lane.count === 1 ? "" : "s"}`);
+      const labelWidth = Math.max(0, ...lanes.map((l) => ctx!.measureText(`${l.label} ${countText(l)}`).width));
+      const labelCol = Math.floor((width - labelWidth - 16) / PX);
+      const gain = narrow ? 0.45 : 1;
+      const spineTop = laneRows[0] - 6;
+      const spineBottom = laneRows[laneRows.length - 1] + 6;
+
+      shadeAt.fill(-1);
+      for (let r = 0; r < rows; r++) {
+        const laneIndex = laneRows.indexOf(r);
+        for (let c = 0; c < cols; c++) {
+          let v = 0;
+          if (c >= rawStart && c < spine) {
+            const w = (c - rawStart) / (spine - rawStart);
+            v = Math.pow(noise(c * 1.3, r * 1.1, t), 2) * (0.1 + w * 1.1) + (hash(c, r + Math.floor(t * 6)) < 0.04 * w ? 0.6 : 0);
+          }
+          if (!narrow && hasLanes && c >= spine && c <= spine + 1 && r >= spineTop && r <= spineBottom) v = 0.75;
+          if (!narrow && laneIndex !== -1 && c > spine && c < labelCol - 2) {
+            const lane = lanes[laneIndex];
+            const period = 30 + (laneIndex % 3) * 8;
+            // Lanes without a count still vary in pace from one to the next.
+            const weight = lane.count ?? (laneIndex % 3) + 1;
+            const phase = (c - t * (11 + weight * 2.4) + laneIndex * 17) % period;
+            v = (phase + period) % period < 4 + weight * 1.5 ? 1 : 0.4;
+          }
+          if (pointer && c >= rawStart && c < spine) {
+            const d = Math.hypot(c * PX - pointer.x, r * PX - pointer.y);
+            if (d < LENS_RADIUS) v += (1 - d / LENS_RADIUS) * 0.45;
+          }
+          v *= gain;
+          // Dither in from the text side and out toward the bottom.
+          if ((c - rawStart) / FADE_IN < bayer(c, r)) continue;
+          if ((rows - r) / FADE_OUT < bayer(c, r)) continue;
+          if (v < 0.12) continue;
+          shadeAt[r * cols + c] = Math.min(SHADES.length - 1, Math.floor((v - 0.12) * SHADES.length * 1.1));
+        }
+      }
+
+      ctx!.clearRect(0, 0, width, height);
+      let shade = -1;
+      for (let r = 0; r < rows; r++) {
+        let c = 0;
+        while (c < cols) {
+          const k = shadeAt[r * cols + c];
+          let end = c + 1;
+          while (end < cols && shadeAt[r * cols + end] === k) end++;
+          if (k >= 0) {
+            if (k !== shade) {
+              shade = k;
+              ctx!.fillStyle = SHADES[k];
+            }
+            ctx!.fillRect(c * PX, r * PX, (end - c) * PX, PX);
+          }
+          c = end;
+        }
+      }
+
+      if (narrow) return;
+      ctx!.textBaseline = "middle";
+      lanes.forEach((lane, i) => {
+        const y = laneRows[i] * PX + PX / 2;
+        const x = labelCol * PX;
+        ctx!.fillStyle = labelInk;
+        ctx!.fillText(lane.label, x, y);
+        ctx!.fillStyle = countInk;
+        ctx!.fillText(countText(lane), x + ctx!.measureText(`${lane.label} `).width, y);
+      });
+    }
+
+    function frame(now: number) {
+      if (!running) return;
+      raf = requestAnimationFrame(frame);
+      if (now - last < FRAME_MS) return;
+      last = now;
+      draw(now / 1000);
+    }
+
+    function start() {
+      if (still || running) return;
+      running = true;
+      raf = requestAnimationFrame(frame);
+    }
+
+    function stop() {
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+
+    resize();
+    draw(4);
+    root.classList.add("field--live");
+
+    new ResizeObserver(() => {
+      resize();
+      draw(still ? 4 : performance.now() / 1000);
+    }).observe(root);
+
+    document.fonts.ready.then(() => {
+      resize();
+      draw(still ? 4 : performance.now() / 1000);
+    });
+
+    if (still) return;
+
+    new IntersectionObserver(([entry]) => (entry.isIntersecting ? start() : stop())).observe(root);
+    document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
+
+    const hero = root.parentElement ?? root;
+    hero.addEventListener("pointermove", (event) => {
+      const rect = root.getBoundingClientRect();
+      pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    });
+    hero.addEventListener("pointerleave", () => {
+      pointer = null;
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-field]").forEach(initField);
+</script>

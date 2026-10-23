@@ -5,7 +5,6 @@ interface Props {
   companyUrl?: string;
   location: string;
   positions: Position[];
-  index: number;
 }
 
 function formatWorkDate(iso: string): string {
@@ -18,117 +17,66 @@ function formatWorkDate(iso: string): string {
   });
 }
 
+function DateRange({ start, end }: { start: string; end: string | null }) {
+  return (
+    <>
+      <time dateTime={start}>{formatWorkDate(start)}</time> to{" "}
+      {end ? <time dateTime={end}>{formatWorkDate(end)}</time> : "Present"}
+    </>
+  );
+}
+
 export default function WorkTimelineCard({
   company,
   companyUrl,
   location,
   positions,
-  index,
 }: Props) {
-  const isMultiPosition = positions.length > 1;
-
-  // Overall date range for the company
   const earliestStart = positions[positions.length - 1].startDate;
   const latestEnd = positions[0].endDate;
   const isCurrent = latestEnd === null;
 
   return (
-    <article
-      className="group relative w-full p-7 md:p-8 rounded-3xl overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] border border-white/5 hover:border-white/10 bg-surface/40 backdrop-blur-md"
-      aria-label={`Work history at ${company}`}
-    >
-      {/* Hover Gradient Bloom */}
-      <div
-        className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        aria-hidden="true"
-      />
-
-      <div className="relative z-10">
-        {/* Company Header */}
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <div className="min-w-0">
-            <h2 className="text-xl font-display font-semibold text-text leading-tight text-balance group-hover:text-white transition-colors duration-300">
-              {companyUrl ? (
-                <a
-                  href={companyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-accent transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
-                  aria-label={`${company} (opens in new tab)`}
-                >
-                  {company}
-                </a>
-              ) : (
-                company
-              )}
-            </h2>
-            <p className="text-[0.8125rem] font-mono text-text-muted mt-1.5 tracking-wide">
-              {location}
-            </p>
-          </div>
-
-          {/* Overall date range pill — accent for current role, neutral for past */}
-          <span
-            className={
-              isCurrent
-                ? "shrink-0 px-2 py-0.5 text-[0.625rem] md:px-2.5 md:py-1 md:text-[0.6875rem] font-mono rounded-md bg-accent/10 text-accent border border-accent/20 whitespace-nowrap"
-                : "shrink-0 px-2 py-0.5 text-[0.625rem] md:px-2.5 md:py-1 md:text-[0.6875rem] font-mono rounded-md bg-surface text-text-secondary border border-border-subtle whitespace-nowrap"
-            }
-          >
-            <time dateTime={earliestStart}>{formatWorkDate(earliestStart)}</time> &ndash;{" "}
-            {latestEnd ? <time dateTime={latestEnd}>{formatWorkDate(latestEnd)}</time> : "Present"}
+    <article className="job" aria-label={`Work history at ${company}`}>
+      <div className="job__head">
+        <h2 className="job__company">
+          {companyUrl ? (
+            <a href={companyUrl} target="_blank" rel="noopener noreferrer" aria-label={`${company} (opens in new tab)`}>
+              {company}
+            </a>
+          ) : (
+            company
+          )}
+        </h2>
+        <div className="job__facts">
+          <span>{location}</span>
+          <span>
+            <DateRange start={earliestStart} end={latestEnd} />
           </span>
+          {isCurrent && <span className="job__current">Current role</span>}
         </div>
-
-        {/* Positions */}
-        <div className="mt-6">
-          {positions.map((pos, posIndex) => (
-            <div
-              key={posIndex}
-              className={
-                isMultiPosition && posIndex > 0
-                  ? "pt-5 mt-5 border-t border-border-subtle"
-                  : ""
-              }
-            >
-              {/* Position title + dates */}
-              <div className="flex items-baseline justify-between gap-2 mb-2.5">
-                <h3 className="text-[0.9375rem] font-display font-medium text-text min-w-0">
-                  {pos.title}
-                </h3>
-                <span className="shrink-0 text-[0.75rem] font-mono text-text-muted whitespace-nowrap">
-                  <time dateTime={pos.startDate}>{formatWorkDate(pos.startDate)}</time> &ndash;{" "}
-                  {pos.endDate ? <time dateTime={pos.endDate}>{formatWorkDate(pos.endDate)}</time> : "Present"}
-                </span>
-              </div>
-
-              {/* Description */}
-              {pos.description && (
-                <div className="space-y-3">
-                  {pos.description.split("\n\n").map((para, i) => (
-                    <p key={i} className="text-[0.875rem] text-text-secondary font-light leading-relaxed">
-                      {para}
-                    </p>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Current role indicator */}
-        {isCurrent && (
-          <div className="mt-6 pt-4 border-t border-border-subtle flex items-center gap-2">
-            <span className="relative flex h-2 w-2" aria-hidden="true">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
-            </span>
-            <span className="text-[0.75rem] font-mono text-accent-light tracking-wide uppercase">
-              Current Role
-            </span>
-          </div>
-        )}
       </div>
+
+      <ol role="list" className="job__roles">
+        {positions.map((pos) => (
+          <li key={`${pos.title}-${pos.startDate}`} className="role">
+            <div className="role__head">
+              <h3 className="role__title">{pos.title}</h3>
+              <span className="role__dates">
+                <DateRange start={pos.startDate} end={pos.endDate} />
+              </span>
+            </div>
+
+            {pos.description && (
+              <div className="role__desc">
+                {pos.description.split("\n\n").map((para, i) => (
+                  <p key={i}>{para}</p>
+                ))}
+              </div>
+            )}
+          </li>
+        ))}
+      </ol>
     </article>
   );
 }

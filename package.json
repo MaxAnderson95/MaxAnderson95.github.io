@@ -21,7 +21,6 @@
     "react-dom": "^19.2.4",
     "remark-github-blockquote-alert": "^2.0.1",
     "simple-icons": "^16.9.0",
-    "tailwindcss": "^4.1.18",
-    "typeit-react": "^2.7.8"
+    "tailwindcss": "^4.1.18"
   }
 }

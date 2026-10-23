@@ -1,28 +1,23 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Navbar from "../components/Navbar.astro";
+import AsciiNetwork from "../components/AsciiNetwork.astro";
 import Hero from "../components/Hero";
-import Footer from "../components/Footer";
+import RoleTyper from "../components/RoleTyper.astro";
 import { siteData } from "../data/site";
 ---
 
-<BaseLayout showRunners>
+<BaseLayout>
   <Navbar active="home" />
 
-  <main id="main-content" tabindex="-1" class="flex-1 flex flex-col">
-    <Hero
-      client:idle
-      name={siteData.name}
-      bio={siteData.bio}
-      roles={[
-        "Senior Platform Engineer",
-        "Cloud-Native Engineer",
-        "Infrastructure Engineer",
-      ]}
-    />
+  <main id="main-content" tabindex="-1" class="home flex-1">
+    <section class="hero" aria-label="Introduction">
+      <AsciiNetwork after=".hero__column" />
+      <div class="wrap hero__grid">
+        <Hero name={siteData.name} bio={siteData.bio} emailUrl={siteData.socials.email.url}>
+          <RoleTyper roles={["Senior Platform Engineer", "Cloud-Native Engineer", "Infrastructure Engineer"]} />
+        </Hero>
+      </div>
+    </section>
   </main>
-
-  <Footer />
 </BaseLayout>
-
-

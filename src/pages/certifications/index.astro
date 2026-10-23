@@ -2,48 +2,8 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Navbar from "../../components/Navbar.astro";
 import CertCard from "../../components/CertCard";
-import Footer from "../../components/Footer";
-import { certifications } from "../../data/certifications";
-import type { Certification } from "../../data/certifications";
-
-// Resolve simple-icons SVG paths at build time so the library is never shipped to the client
-import * as simpleIcons from "simple-icons";
-
-interface ResolvedCert {
-  name: string;
-  issuer: string;
-  issuerColor: string;
-  iconPath?: string;
-  customIconMarkup?: string;
-  achievedDate: string;
-  validUntil: string | null;
-  url?: string;
-}
-
-const allIcons = Object.values(simpleIcons) as Array<{ slug: string; path: string }>;
-
-const resolvedCerts: ResolvedCert[] = certifications.map((cert: Certification) => {
-  let iconPath: string | undefined;
-  let customIconMarkup: string | undefined;
-
-  if (cert.simpleIconSlug) {
-    const icon = allIcons.find((i) => i.slug === cert.simpleIconSlug);
-    iconPath = icon?.path ?? "";
-  } else if (cert.customIconSvg) {
-    customIconMarkup = cert.customIconSvg;
-  }
-
-  return {
-    name: cert.name,
-    issuer: cert.issuer,
-    issuerColor: cert.issuerColor,
-    iconPath,
-    customIconMarkup,
-    achievedDate: cert.achievedDate,
-    validUntil: cert.validUntil,
-    url: cert.url,
-  };
-});
+import AsciiField from "../../components/AsciiField.astro";
+import { issuerLanes, resolvedCerts } from "../../lib/certifications";
 ---
 
 <BaseLayout
@@ -52,41 +12,43 @@ const resolvedCerts: ResolvedCert[] = certifications.map((cert: Certification) =
 >
   <Navbar active="certifications" />
 
-  <main id="main-content" tabindex="-1" class="relative z-10 max-w-[1100px] mx-auto px-6 md:px-10 pt-28 pb-20">
-    {/* Header */}
-    <div class="reveal mb-12" style="animation-delay: 0.15s;">
-      <h1 class="font-display font-bold text-[clamp(2rem,5vw,3rem)] tracking-tight leading-tight text-text">
-        Certifications
-      </h1>
-      <p class="text-text-secondary text-[1.0625rem] mt-3 max-w-xl">
+  <main id="main-content" tabindex="-1" class="wrap flex-1">
+    <header class="page-head">
+      <AsciiField lanes={issuerLanes} unit="cert" />
+      <h1>Certifications</h1>
+      <p class="lead">
         Cloud, Kubernetes, and platform certifications earned along the way.
       </p>
+    </header>
+
+    <div class="page-body">
+      {resolvedCerts.length > 0 ? (
+        <table class="cert-table">
+          <thead>
+            <tr>
+              <th scope="col">Certification</th>
+              <th scope="col">Issuer</th>
+              <th scope="col">Achieved</th>
+              <th scope="col">Valid until</th>
+            </tr>
+          </thead>
+          <tbody>
+            {resolvedCerts.map((cert) => (
+              <CertCard
+                name={cert.name}
+                issuer={cert.issuer}
+                iconPath={cert.iconPath}
+                customIconMarkup={cert.customIconMarkup}
+                achievedDate={cert.achievedDate}
+                validUntil={cert.validUntil}
+                url={cert.url}
+              />
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p class="empty-note">No certifications listed yet.</p>
+      )}
     </div>
-
-    {resolvedCerts.length > 0 ? (
-      <div class="grid gap-6 md:gap-8 md:grid-cols-2">
-        {resolvedCerts.map((cert, i) => (
-          <CertCard
-            name={cert.name}
-            issuer={cert.issuer}
-            issuerColor={cert.issuerColor}
-            iconPath={cert.iconPath}
-            customIconMarkup={cert.customIconMarkup}
-            achievedDate={cert.achievedDate}
-            validUntil={cert.validUntil}
-            url={cert.url}
-            index={i}
-          />
-        ))}
-      </div>
-    ) : (
-      <div class="reveal py-20 text-center" style="animation-delay: 0.3s;">
-        <p class="font-mono text-sm tracking-wide text-text-muted uppercase">
-          No certifications listed yet.
-        </p>
-      </div>
-    )}
   </main>
-
-  <Footer />
 </BaseLayout>
