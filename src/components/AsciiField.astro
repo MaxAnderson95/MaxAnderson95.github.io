@@ -1,11 +1,13 @@
 ---
 // Unsorted packets thicken toward a spine, then leave it as one lane per item,
-// each lane labelled with its real count. Drawn in square pixels in the night
-// blues, dithering in from the text on the left and out along the bottom. With rawAfter set and no lanes, the
-// field starts after that element of the parent and thickens to the right edge.
+// each lane labelled, with its real count when it has one. Drawn in square
+// pixels in the night blues, dithering in from the text on the left and out
+// along the bottom. With rawAfter set and no lanes, the field starts after
+// that element of the parent and thickens to the right edge.
 interface Lane {
   label: string;
-  count: number;
+  /** Shown beside the label, and sets how busy the lane is */
+  count?: number;
 }
 
 interface Props {
@@ -29,7 +31,7 @@ const { lanes = [], unit = "", rawAfter } = Astro.props;
 <script>
   interface Lane {
     label: string;
-    count: number;
+    count?: number;
   }
 
   const PX = 5;
@@ -107,7 +109,8 @@ const { lanes = [], unit = "", rawAfter } = Astro.props;
       const rawStart = narrow ? 0 : (anchoredStart ?? Math.round(cols * 0.42));
       const spine = narrow || !hasLanes ? cols : Math.round(cols * 0.66);
       ctx!.font = `12px ${mono}`;
-      const labelWidth = Math.max(0, ...lanes.map((l) => ctx!.measureText(`${l.label} ${l.count} ${unit}s`).width));
+      const countText = (lane: Lane) => (lane.count === undefined ? "" : `${lane.count} ${unit}${lane.count === 1 ? "" : "s"}`);
+      const labelWidth = Math.max(0, ...lanes.map((l) => ctx!.measureText(`${l.label} ${countText(l)}`).width));
       const labelCol = Math.floor((width - labelWidth - 16) / PX);
       const gain = narrow ? 0.45 : 1;
       const spineTop = laneRows[0] - 6;
@@ -126,8 +129,10 @@ const { lanes = [], unit = "", rawAfter } = Astro.props;
           if (!narrow && laneIndex !== -1 && c > spine && c < labelCol - 2) {
             const lane = lanes[laneIndex];
             const period = 30 + (laneIndex % 3) * 8;
-            const phase = (c - t * (11 + lane.count * 2.4) + laneIndex * 17) % period;
-            v = (phase + period) % period < 4 + lane.count * 1.5 ? 1 : 0.4;
+            // Lanes without a count still vary in pace from one to the next.
+            const weight = lane.count ?? (laneIndex % 3) + 1;
+            const phase = (c - t * (11 + weight * 2.4) + laneIndex * 17) % period;
+            v = (phase + period) % period < 4 + weight * 1.5 ? 1 : 0.4;
           }
           if (pointer && c >= rawStart && c < spine) {
             const d = Math.hypot(c * PX - pointer.x, r * PX - pointer.y);
@@ -169,7 +174,7 @@ const { lanes = [], unit = "", rawAfter } = Astro.props;
         ctx!.fillStyle = labelInk;
         ctx!.fillText(lane.label, x, y);
         ctx!.fillStyle = countInk;
-        ctx!.fillText(`${lane.count} ${unit}${lane.count === 1 ? "" : "s"}`, x + ctx!.measureText(`${lane.label} `).width, y);
+        ctx!.fillText(countText(lane), x + ctx!.measureText(`${lane.label} `).width, y);
       });
     }
 

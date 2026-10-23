@@ -61,7 +61,6 @@ const { after } = Astro.props;
   const FADE_COLS = 22;
 
   // Parts of kind OPS (cluster plinths, queues) get a darker top.
-  const EDGE = 0;
   const NETWORK = 1;
   const COMPUTE = 2;
   const DATA = 3;
@@ -74,6 +73,10 @@ const { after } = Astro.props;
   const USER_GROUND = 10;
 
   const REST: Pose = { center: [6.8, -1, -8.8], zoom: 0.86 };
+  // On phones the map is its own panel under the text, framed on the
+  // perimeter: the firewall, the user and the attacker, and the corner of the
+  // board behind them.
+  const REST_NARROW: Pose = { center: [-6, -1, -22], zoom: 0.78 };
   const INTRO_S = 10;
 
   const add = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -153,10 +156,9 @@ const { after } = Astro.props;
 
   // Each node has an anchor on the floor where its cables meet it.
   const NODES: { name: string; kind: number; at: [number, number]; shapes: Shape[] }[] = [
-    // The edge: users, DNS, CDN, firewall and the VPN gateway.
-    { name: "users", kind: EDGE, at: [-29, 0], shapes: [ball(-29, 1.8, 0, 1.5), cyl(-29, 0, 0, 0.45, 0.4)] },
+    // The edge: a small pod group, DNS, firewall and the VPN gateway.
+    { name: "pods", kind: COMPUTE, at: [-29, 0], shapes: cluster(-29, 0, 2, 2) },
     { name: "dns", kind: NETWORK, at: [-24, -7], shapes: [cyl(-24, 0, -7, 1.2, 0.6), cyl(-24, 0.6, -7, 0.7, 0.6)] },
-    { name: "cdn", kind: NETWORK, at: [-24, 0], shapes: [box(-24, 0, 0, 1.6, 0.6, 1.6), box(-24, 1.2, 0, 0.9, 0.45, 0.9)] },
     { name: "vpn", kind: NETWORK, at: [-24, 7], shapes: [box(-24, 0, 7, 1.3, 0.5, 1), ball(-24, 1.5, 7, 0.5)] },
     { name: "waf", kind: NETWORK, at: [-19, 0], shapes: [box(-19, 0, 0, 0.4, 1, 2.6)] },
     // Shared services in the back corner.
@@ -294,10 +296,9 @@ const { after } = Astro.props;
   // angle: along x first and then z, or the reverse when the route says "z".
   const LINKS: { from: number; to: number; pts: V3[] }[] = (
     [
-      ["users", "cdn"],
-      ["users", "dns", "z"],
-      ["users", "vpn", "z"],
-      ["cdn", "waf"],
+      ["pods", "waf"],
+      ["pods", "dns", "z"],
+      ["pods", "vpn", "z"],
       ["waf", "lb"],
       ["vpn", "lb"],
       ["lb", "apigw"],
@@ -538,8 +539,8 @@ const { after } = Astro.props;
       cols = Math.ceil(width / CELL_W);
       rows = Math.ceil(height / CELL_H);
       wide = width >= 960;
-      const afterEl = root.dataset.after ? scope.querySelector(root.dataset.after) : null;
-      const left = afterEl ? afterEl.getBoundingClientRect().right - rect.left + 48 : width * 0.45;
+      const afterEl = wide && root.dataset.after ? scope.querySelector(root.dataset.after) : null;
+      const left = afterEl ? afterEl.getBoundingClientRect().right - rect.left + 48 : wide ? width * 0.45 : 0;
       clipLeft = Math.floor(left / CELL_W);
       centerX = (left + width) / 2;
       centerY = height * 0.5;
@@ -754,7 +755,9 @@ const { after } = Astro.props;
     }
 
     // The diagram dithers in over the columns next to the text.
-    const hidden = (x: number, py: number) => (x - clipLeft) / FADE_COLS < bayer(x, py);
+    // On phones the panel dithers in from its top edge instead.
+    const hidden = (x: number, py: number) =>
+      wide ? (x - clipLeft) / FADE_COLS < bayer(x, py) : py / FADE_COLS < bayer(x, py);
 
     function paint() {
       for (let py = 0; py < prows; py++) {
@@ -879,35 +882,34 @@ const { after } = Astro.props;
       depth.fill(Infinity);
       pdepth.fill(Infinity);
       glyphAt.fill("");
-      if (wide) {
-        drawGround();
-        fillParts(t, PARTS);
-        ZONE_EDGES.forEach((edge, k) => {
-          const { dashed } = ZONES[k >> 2];
-          drawLine(edge.a, edge.b, dashed ? NET_EDGE : ZONE_EDGE, dashed);
-        });
-        for (const link of LINKS) for (let i = 1; i < link.pts.length; i++) drawPixelLine(link.pts[i - 1], link.pts[i], LIT);
-        // Parts read from their solid faces; only the board keeps a drawn rim.
-        for (const edge of BOARD_EDGES) drawLine(edge.a, edge.b, RIM_EDGE);
-        for (const route of ROUTES) {
-          for (let i = 1; i < route.pts.length; i++) drawPixelLine(route.pts[i - 1], route.pts[i], route.bad ? RED_DARK : GREEN_DARK);
-        }
-        drawPackets(t, dt);
-        drawThreats(t, dt);
+      drawGround();
+      fillParts(t, PARTS);
+      ZONE_EDGES.forEach((edge, k) => {
+        const { dashed } = ZONES[k >> 2];
+        drawLine(edge.a, edge.b, dashed ? NET_EDGE : ZONE_EDGE, dashed);
+      });
+      for (const link of LINKS) for (let i = 1; i < link.pts.length; i++) drawPixelLine(link.pts[i - 1], link.pts[i], LIT);
+      // Parts read from their solid faces; only the board keeps a drawn rim.
+      for (const edge of BOARD_EDGES) drawLine(edge.a, edge.b, RIM_EDGE);
+      for (const route of ROUTES) {
+        for (let i = 1; i < route.pts.length; i++) drawPixelLine(route.pts[i - 1], route.pts[i], route.bad ? RED_DARK : GREEN_DARK);
       }
+      drawPackets(t, dt);
+      drawThreats(t, dt);
       paint();
     }
 
     // The intro: a close glide from the CDN toward the clusters, then a slow
     // pull-back that reveals the board. The angle stays isometric throughout.
     function poseAt(elapsed: number): Pose {
-      if (still || elapsed >= INTRO_S) return REST;
+      const rest = wide ? REST : REST_NARROW;
+      if (still || elapsed >= INTRO_S) return rest;
       const glide = ease(clamp01(elapsed / 6));
       const reveal = ease(clamp01((elapsed - 4) / 5.5));
       const flyover = lerp([-27, 0.8, 0.5], [-7, 0.8, -4], glide);
       return {
-        center: lerp(flyover, REST.center, reveal),
-        zoom: Math.exp(Math.log(5.5 - 1.2 * glide) * (1 - reveal) + Math.log(REST.zoom) * reveal),
+        center: lerp(flyover, rest.center, reveal),
+        zoom: Math.exp(Math.log(5.5 - 1.2 * glide) * (1 - reveal) + Math.log(rest.zoom) * reveal),
       };
     }
 
@@ -917,7 +919,7 @@ const { after } = Astro.props;
       const t = now / 1000;
       if (startedAt < 0) startedAt = t;
       const elapsed = t - startedAt;
-      if (now - last < (wide && elapsed < INTRO_S ? INTRO_FRAME_MS : REST_FRAME_MS)) return;
+      if (now - last < (elapsed < INTRO_S ? INTRO_FRAME_MS : REST_FRAME_MS)) return;
       last = now;
       const dt = Math.min(0.1, t - prevT);
       prevT = t;
@@ -926,7 +928,7 @@ const { after } = Astro.props;
     }
 
     function drawStill() {
-      setPose(REST);
+      setPose(wide ? REST : REST_NARROW);
       packets.length = 0;
       INNER_LINKS.forEach((i) => packets.push({ link: i, dir: 1, d: LENGTHS[i] * ((0.3 + i * 0.37) % 1), speed: 0 }));
       ROUTES.forEach((route, r) => threats.push({ route: r, d: route.length * 0.55, speed: 0 }));

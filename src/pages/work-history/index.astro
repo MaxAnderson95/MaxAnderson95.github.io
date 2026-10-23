@@ -5,6 +5,16 @@ import AsciiField from "../../components/AsciiField.astro";
 import WorkRuler from "../../components/WorkRuler.astro";
 import WorkTimelineCard from "../../components/WorkTimelineCard";
 import { workHistory } from "../../data/work-history";
+
+const specialties = [
+  "Kubernetes",
+  "Cloud networking",
+  "Infrastructure as code",
+  "CI/CD",
+  "Observability",
+  "Identity & security",
+  "Azure",
+];
 ---
 
 <BaseLayout
@@ -15,7 +25,7 @@ import { workHistory } from "../../data/work-history";
 
   <main id="main-content" tabindex="-1" class="wrap flex-1">
     <header class="page-head">
-      <AsciiField lanes={workHistory.map((entry) => ({ label: entry.company, count: entry.positions.length }))} unit="role" />
+      <AsciiField lanes={specialties.map((label) => ({ label }))} />
       <h1>Work History</h1>
       <p class="lead">
         A decade in infrastructure: where I’ve worked, and the work that shipped.
