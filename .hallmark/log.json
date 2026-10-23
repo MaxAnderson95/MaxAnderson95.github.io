@@ -3,16 +3,16 @@
   "mode": "redesign",
   "depth": "full",
   "scope": "site",
-  "shape": "Index-First home, Index lists, Long Document posts, Rows work history, Table certifications",
-  "theme": "cobalt",
-  "axes": "light/grotesk-sans/cool",
+  "shape": "one-screen Stage home, Index lists, Long Document posts, Rows work history, Table certifications",
+  "theme": "cobalt night",
+  "axes": "dark/grotesk-sans/cool",
   "hero": "Stage (/), Banner (lists)",
-  "nav": "slab, paper-2 with keycap",
-  "footer": "mast on graphite, the email address as the mast",
-  "imagery": "owner portrait in duotone, post feature images",
+  "nav": "slab on the page blue with a white keycap",
+  "footer": "none, at the owner's request",
+  "imagery": "owner portrait in a cobalt duotone, post feature images",
   "photos": [],
   "entry": "none",
-  "fingerprint": "stage-field/index/ruler/split/table/graphite-mast",
+  "fingerprint": "stage-map/index/ruler/split/table/no-footer",
   "sections": [
    "hero",
    "index",
@@ -20,7 +20,7 @@
    "split",
    "table"
   ],
-  "signature": "ASCII field resolving packets into one lane per tag with real counts",
+  "signature": "an isometric cloud network map in square pixels on the home page, with a firewall blocking an attacker and passing a user; a pixel lane field on Banner heads",
   "waived": [
    "78",
    "49b",
@@ -28,36 +28,6 @@
    "79"
   ],
   "prompt": "a senior platform engineer personal site and technical blog on Kubernetes and Azure, judged by hiring managers and peers",
-  "date": "2026-10-23"
- },
- {
-  "mode": "redesign",
-  "depth": "full",
-  "scope": "site",
-  "shape": "Ledge home, Index lists, Long Document posts, Rows work history, Table certifications",
-  "theme": "brand",
-  "axes": "dark/geometric-sans/warm",
-  "hero": "Ledge (/), Banner (lists)",
-  "nav": "edge-aligned bar, wordmark left",
-  "footer": "colophon block on paper-2",
-  "imagery": "the owner portrait and post feature images, no library photos",
-  "photos": [],
-  "entry": "none",
-  "fingerprint": "ledge/index/rows/table/edge-bar/colophon",
-  "sections": [
-   "hero",
-   "index",
-   "rows",
-   "table"
-  ],
-  "signature": "the name set at poster scale beneath the portrait",
-  "waived": [
-   "78",
-   "49b",
-   "44c",
-   "79"
-  ],
-  "prompt": "a senior platform engineer personal site and technical blog, judged by hiring managers and peers",
   "date": "2026-10-23"
  }
 ]
