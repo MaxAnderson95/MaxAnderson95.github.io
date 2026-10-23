@@ -26,4 +26,4 @@ button, input, select, textarea { font: inherit; }
 /* photographs: cobalt duotone, highlights in the lightest night tone and shadows in the darkest */
 [data-slot]:has(> img) { isolation: isolate; background: var(--color-night-7); outline: 1px solid color-mix(in oklab, var(--color-ink) 8%, transparent); outline-offset: -1px; }
 [data-slot] > img { z-index: 0; filter: grayscale(1) contrast(1.08); mix-blend-mode: multiply; }
-[data-slot]:has(> img)::before { content: ""; position: absolute; inset: 0; z-index: 1; background: var(--color-graphite); mix-blend-mode: lighten; pointer-events: none; }
+[data-slot]:has(> img)::before { content: ""; position: absolute; inset: 0; z-index: 1; background: var(--color-night-0); mix-blend-mode: lighten; pointer-events: none; }

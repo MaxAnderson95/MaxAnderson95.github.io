@@ -4,7 +4,7 @@ Instructions for AI coding agents working in this repository.
 
 ## Repository Overview
 
-Personal website/blog for maxanderson.tech built with **Astro 5**, **React 19**, and **Tailwind CSS v4**. Deployed to GitHub Pages via GitHub Actions on push to `main`.
+Personal website/blog for maxanderson.tech built with **Astro 5**, **React 19**, and **Tailwind CSS v4**, in a cobalt night theme with pixel-art canvas graphics. Deployed to GitHub Pages via GitHub Actions on push to `main`.
 
 **Stack:** Astro (static SSG) + React (interactive components) + Tailwind v4 (via Vite plugin) + TypeScript (strict mode)
 
@@ -13,11 +13,15 @@ Personal website/blog for maxanderson.tech built with **Astro 5**, **React 19**,
 ```
 src/
   components/       # UI components (.tsx for React, .astro for Astro)
+                    #   AsciiNetwork.astro: the home page's isometric network map (canvas)
+                    #   AsciiField.astro: the pixel lane field behind each list page head
   content/
     blog/           # Markdown blog posts
   content.config.ts # Astro content collection schema (Zod)
   data/
     site.ts         # Site metadata, social links, bio text
+    work-history.ts # Companies and roles for /work-history/
+    certifications.ts # Certifications and their order on /certifications/
   layouts/
     BaseLayout.astro # Single base layout (all pages use this)
   lib/
@@ -26,12 +30,18 @@ src/
     blog/           # Blog listing + individual post pages
     posts/          # Legacy redirects (/posts/* -> /blog/*)
     tags/           # Tag listing + tag-filtered views
+    work-history/   # Per-role timeline
+    certifications/ # Certifications table
     index.astro     # Homepage
   styles/
-    global.css      # All CSS: Tailwind v4 imports, theme, custom styles
+    tokens.css      # Design tokens (@theme): colours, fonts, type and spacing scales
+    base.css        # Element defaults, the page dither texture, photo duotone
+    global.css      # Component and page styles; opens with the Hallmark stamp
 public/
   img/blog/         # Feature images per post (subdirectories by slug)
+  img/dither.png    # 3x3 tile for the page's dot-screen texture
   CNAME             # Custom domain: maxanderson.tech
+.hallmark/          # Hallmark design-skill state (log.json, salt); shots/ is gitignored
 ```
 
 ## Build / Dev / Deploy Commands
@@ -95,17 +105,23 @@ The `dist/` directory is gitignored and must never be committed.
 - Use `class` attribute (not `className`) in Astro template markup
 - Use `client:idle` directive for React component hydration (not `client:load`)
 - Template comments use `{/* */}` syntax
-- Inline `style` attributes for per-element animation delays
+- Inline `style` attributes carry per-element CSS custom properties (for example `--start` and `--width` on work-history bars)
 
 ### CSS (global.css)
 
 - **Indentation:** 2 spaces
 - **Tailwind v4:** Imported via `@import "tailwindcss"` with `@theme` block for custom tokens
 - **Custom properties:** Kebab-case (`--color-accent`, `--font-display`)
-- **Class naming:** BEM-like with double dashes for modifiers (`photo-bracket--tl`)
+- **Class naming:** BEM-like, double underscores for elements and double dashes for modifiers (`hero__portrait`, `key--primary`)
 - **Section organization:** Separated by `/* ===== Section Name ===== */` comments
 - **Tokens:** Colours, fonts and the type and spacing scales live in `src/styles/tokens.css`; element defaults in `src/styles/base.css` (scaffolded from Hallmark's Cobalt theme). `global.css` opens with a Hallmark stamp comment block; keep it first.
 - **Fonts:** "Familjen Grotesk" (headings, labels), "IBM Plex Sans" (body), "JetBrains Mono" (code and the hero field)
+
+### Visual design
+
+- **Theme:** a cobalt night palette. Every page sits on the night blue (`--color-night-1`) with a static dot-screen texture (`body::before` in `base.css`). Semantic tokens (`--color-paper`, `--color-ink`, `--color-accent`, rules, keys) are defined in terms of the eight `--color-night-0` to `--color-night-7` shades; change those rather than hard-coding colours. `--color-threat-*` (red) and `--color-safe-*` (green) are reserved for the attacker and the allowed user on the home map.
+- **Pixel art:** canvas graphics draw in square 5px pixels with ordered (Bayer) dithering for fades. The home map dithers in beside the text column on desktop and becomes its own panel under the text below 960px.
+- **Hallmark:** the design was produced with the Hallmark skill. Keep the stamp comment block at the top of `global.css` and `.hallmark/log.json` in step with the design when it changes.
 
 ### Blog Content (Markdown)
 
@@ -133,7 +149,7 @@ draft: true                                    # optional, hides in production
 - **Files:** Kebab-case for content/pages (`workload-identity-federation-part-1.md`)
 - **Components:** PascalCase for component files (`BlogCard.tsx`, `Navbar.astro`)
 - **Functions/variables:** camelCase (`formatDate`, `sortedPosts`)
-- **CSS classes:** Kebab-case / BEM-like (`hero-glow`, `photo-bracket--tl`)
+- **CSS classes:** Kebab-case / BEM-like (`post-row__title`, `key--primary`)
 - **Types/interfaces:** PascalCase (`BlogPost`, `Props`)
 
 ### Error Handling
