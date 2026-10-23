@@ -22,6 +22,12 @@
   --color-night-5: oklch(60% 0.14 261);
   --color-night-6: oklch(78% 0.08 257);
   --color-night-7: oklch(95% 0.02 255);
+  --color-threat-1: oklch(68% 0.21 27);
+  --color-threat-2: oklch(54% 0.2 27);
+  --color-threat-3: oklch(38% 0.15 27);
+  --color-safe-1: oklch(84% 0.19 150);
+  --color-safe-2: oklch(68% 0.17 150);
+  --color-safe-3: oklch(46% 0.12 152);
   --color-error: oklch(74% 0.15 27);
   --color-success: oklch(80% 0.14 155);
   --color-paper: var(--color-night-1);

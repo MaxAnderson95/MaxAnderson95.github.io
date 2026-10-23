@@ -67,8 +67,13 @@ const { after } = Astro.props;
   const DATA = 3;
   const OPS = 4;
   const BOARD_KIND = 5;
+  const FIREWALL = 6;
+  const ATTACKER = 7;
+  const ATTACKER_GROUND = 8;
+  const USER = 9;
+  const USER_GROUND = 10;
 
-  const REST: Pose = { center: [7, -4, 0], zoom: 0.98 };
+  const REST: Pose = { center: [6.8, -1, -8.8], zoom: 0.86 };
   const INTRO_S = 10;
 
   const add = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -109,13 +114,26 @@ const { after } = Astro.props;
     h: [hx, hy, hz],
     kind,
   });
-  const cyl = (x: number, y0: number, z: number, r: number, height: number): Shape => ({
+  const cyl = (x: number, y0: number, z: number, r: number, height: number, kind?: number): Shape => ({
     shape: "cyl",
     c: [x, y0 + height / 2, z],
     r,
     hh: height / 2,
+    kind,
   });
-  const ball = (x: number, y: number, z: number, r: number): Shape => ({ shape: "ball", c: [x, y, z], r });
+  const ball = (x: number, y: number, z: number, r: number, kind?: number): Shape => ({ shape: "ball", c: [x, y, z], r, kind });
+
+  const FIREWALL_X = -1;
+  // The attacker and a legitimate user each stand on their own island off the
+  // board's far edge, either side of the firewall.
+  const ATTACKER_AT: V3 = [8, 0, -40];
+  const USER_AT: V3 = [-20, 0, -39];
+  // A figure on a small island: a body and a head on a slab.
+  const figure = (at: V3, kind: number, ground: number): Shape[] => [
+    box(at[0], -BOARD_DEPTH, at[2], 1.6, BOARD_DEPTH / 2, 1.6, ground),
+    cyl(at[0], at[1], at[2], 0.65, 1.2, kind),
+    ball(at[0], at[1] + 1.8, at[2], 0.58, kind),
+  ];
 
   // A Kubernetes cluster: a plinth with a grid of node cubes on it.
   const cluster = (x: number, z: number, nx = 3, nz = 2): Shape[] => [
@@ -172,6 +190,16 @@ const { after } = Astro.props;
     { name: "warehouse", kind: DATA, at: [19, 6], shapes: [box(19, 0, 6, 2.2, 1.1, 2.2), box(19, 2.2, 6, 1.4, 0.5, 1.4)] },
     { name: "storage", kind: DATA, at: [25, 6], shapes: [cyl(25, 0, 6, 1.4, 1.5)] },
     { name: "backup", kind: DATA, at: [22, 16], shapes: [box(22, 0, 16, 2.6, 0.8, 1.5)] },
+    // The perimeter firewall on the board's far edge, with a user and an
+    // attacker beyond it.
+    { name: "firewall", kind: FIREWALL, at: [FIREWALL_X, -29], shapes: [box(FIREWALL_X, 0, -29, 4.2, 2, 0.8)] },
+    {
+      name: "attacker",
+      kind: ATTACKER,
+      at: [ATTACKER_AT[0], ATTACKER_AT[2]],
+      shapes: figure(ATTACKER_AT, ATTACKER, ATTACKER_GROUND),
+    },
+    { name: "user", kind: USER, at: [USER_AT[0], USER_AT[2]], shapes: figure(USER_AT, USER, USER_GROUND) },
     // The recovery region.
     { name: "drdb", kind: DATA, at: [36, -6], shapes: stack(36, -6, 1.5, 2) },
     { name: "drcluster", kind: COMPUTE, at: [36, 7], shapes: cluster(36, 7, 2, 2) },
@@ -298,6 +326,9 @@ const { after } = Astro.props;
       ["registry", "clusterC"],
       ["vault", "apigw"],
       ["dns", "monitoring", "z"],
+      ["firewall", "clusterC", "z"],
+      ["firewall", "cache", "z"],
+      ["firewall", "functions", "z"],
     ] as [string, string, "z"?][]
   ).map(([from, to, order]) => {
     const [ax, az] = NODES[nodeIndex.get(from)!].at;
@@ -309,6 +340,19 @@ const { after } = Astro.props;
       pts: [[ax, az], corner, [bx, bz]].map(([x, z]): V3 => [x, 0.02, z]),
     };
   });
+
+  // The outside routes: a floor cable from each island with one right-angle
+  // bend, ending at its own spot on the firewall's outer face. Bad packets
+  // stop there; good ones pass through onto the firewall's inner cables.
+  const outside = (from: V3, x: number): V3[] => [
+    [from[0], 0.02, from[2]],
+    [x, 0.02, from[2]],
+    [x, 0.02, -29.85],
+  ];
+  const ROUTES = [
+    { pts: outside(ATTACKER_AT, FIREWALL_X - 0.8), bad: true },
+    { pts: outside(USER_AT, FIREWALL_X - 3.2), bad: false },
+  ].map((route) => ({ ...route, length: pathLength(route.pts) }));
 
   function pathLength(pts: V3[]) {
     let total = 0;
@@ -408,7 +452,9 @@ const { after } = Astro.props;
 
     // Cell fills, darkest first. Index 0 is the sky, painted as the base.
     const NIGHT = [0, 1, 2, 3, 4, 5, 6, 7].map((k) => token(`--color-night-${k}`));
-    const FILLS = [NIGHT[1], NIGHT[2], NIGHT[3], NIGHT[4], NIGHT[5], NIGHT[6], NIGHT[7], NIGHT[0], token("--color-paper"), token("--color-accent-2")];
+    const THREAT = [1, 2, 3].map((k) => token(`--color-threat-${k}`));
+    const SAFE = [1, 2, 3].map((k) => token(`--color-safe-${k}`));
+    const FILLS = [NIGHT[1], NIGHT[2], NIGHT[3], NIGHT[4], NIGHT[5], NIGHT[6], NIGHT[7], NIGHT[0], token("--color-paper"), token("--color-accent-2"), ...THREAT, ...SAFE];
     const SKY = 0;
     const TILE = 2;
     const ZONE = 3;
@@ -417,8 +463,21 @@ const { after } = Astro.props;
     const TOP = 6;
     const SHADE = 7;
     const FLASH = 9;
+    const RED = 10;
+    const RED_MID = 11;
+    const RED_DARK = 12;
+    const GREEN = 13;
+    const GREEN_MID = 14;
+    const GREEN_DARK = 15;
     // Fills for a part's top, lit side and shaded side.
-    const faceFill = (kind: number) => [kind === OPS ? PLINTH : TOP, LIT, SHADE];
+    const FACES: Record<number, number[]> = {
+      [ATTACKER]: [RED, RED_MID, RED_DARK],
+      [ATTACKER_GROUND]: [RED_DARK, RED_MID, SHADE],
+      [USER]: [GREEN, GREEN_MID, GREEN_DARK],
+      [USER_GROUND]: [GREEN_DARK, GREEN_MID, SHADE],
+      [OPS]: [PLINTH, LIT, SHADE],
+    };
+    const faceFill = (kind: number) => FACES[kind] ?? [TOP, LIT, SHADE];
     const BOARD_FACES = [TILE, LIT, SHADE];
 
     const styles: { color: string; alpha: number; bold?: boolean }[] = [];
@@ -451,6 +510,16 @@ const { after } = Astro.props;
 
     const packets: { link: number; d: number; dir: 1 | -1; speed: number }[] = [];
     const flashAt = new Float32Array(NODES.length).fill(-10);
+    const FIREWALL_NODE = nodeIndex.get("firewall")!;
+    // Packets on the outside routes; route indexes ROUTES.
+    const threats: { route: number; d: number; speed: number }[] = [];
+    const sparks: { p: V3; v: V3; born: number }[] = [];
+    let blockedAt = -10;
+    let passedAt = -10;
+    const nextOutside = [1.5, 0.8];
+    // Inner cables only carry traffic the user sent through the firewall.
+    const FIREWALL_LINKS = LINKS.flatMap((l, i) => (l.from === FIREWALL_NODE ? [i] : []));
+    const INNER_LINKS = LINKS.flatMap((l, i) => (l.from === FIREWALL_NODE || l.to === FIREWALL_NODE ? [] : [i]));
     let nextSpawn = 0;
     let startedAt = -1;
     let running = false;
@@ -610,6 +679,19 @@ const { after } = Astro.props;
       }
     }
 
+    // The firewall is a brick wall: running-bond courses with dark mortar, and
+    // a top that glows red for a moment each time it stops a packet.
+    function firewallFill(o: V3, hit: { t: number; n: V3 }, shade: number, t: number) {
+      if (shade === 0) return t - blockedAt < 0.3 ? RED : t - passedAt < 0.3 ? GREEN : TOP;
+      const p = add(o, mul(FWD, hit.t));
+      // Bricks are sized to stay several pixels across at the resting zoom.
+      const course = p[1] / 1.1;
+      const row = Math.floor(course);
+      const u = (Math.abs(hit.n[0]) > 0.5 ? p[2] : p[0]) / 2.8 + (row & 1) * 0.5;
+      if (course - row < 0.24 || u - Math.floor(u) < 0.14) return SHADE;
+      return shade === 1 ? LIT : ZONE;
+    }
+
     function fillParts(t: number, list: Part[]) {
       for (const part of list) {
         let minX = Infinity;
@@ -637,6 +719,7 @@ const { after } = Astro.props;
             const shade = shadeOf(hit.n);
             pdepth[p] = hit.t;
             fillAt[p] = flashing && shade === 0 ? FLASH : faces[shade];
+            if (part.kind === FIREWALL) fillAt[p] = firewallFill(rayOrigin(x, py), hit, shade, t);
             const i = Math.floor(py / SUB) * cols + x;
             depth[i] = Math.min(depth[i], hit.t);
             glyphAt[i] = "";
@@ -647,7 +730,7 @@ const { after } = Astro.props;
 
     function drawPackets(t: number, dt: number) {
       if (dt > 0 && t >= nextSpawn) {
-        const link = Math.floor(Math.random() * LINKS.length);
+        const link = INNER_LINKS[Math.floor(Math.random() * INNER_LINKS.length)];
         const dir = Math.random() < 0.75 ? 1 : -1;
         packets.push({ link, dir, d: dir === 1 ? 0 : LENGTHS[link], speed: 5 + Math.random() * 3 });
         nextSpawn = t + 0.08 + Math.random() * 0.14;
@@ -734,6 +817,64 @@ const { after } = Astro.props;
       ctx!.globalAlpha = 1;
     }
 
+    // The attacker fires short bursts of red packets at the firewall; each one
+    // dies on the wall's outer face in a spray of red sparks. The user sends
+    // green packets that the firewall lets through: each one leaves on a
+    // random inner cable as ordinary traffic.
+    function drawThreats(t: number, dt: number) {
+      ROUTES.forEach((route, r) => {
+        if (dt <= 0 || t < nextOutside[r]) return;
+        const burst = route.bad ? 1 + Math.floor(Math.random() * 3) : 1;
+        for (let k = 0; k < burst; k++) threats.push({ route: r, d: -k * 2, speed: 9 + Math.random() * 2 });
+        nextOutside[r] = t + (route.bad ? 1.4 + Math.random() * 1.6 : 0.9 + Math.random() * 1.2);
+      });
+      const spacing = Math.max(0.2, (1.1 * PIX_H) / scale);
+      for (let i = threats.length - 1; i >= 0; i--) {
+        const pk = threats[i];
+        const route = ROUTES[pk.route];
+        pk.d += pk.speed * dt;
+        if (pk.d >= route.length) {
+          threats.splice(i, 1);
+          if (!route.bad) {
+            passedAt = t;
+            const link = FIREWALL_LINKS[Math.floor(Math.random() * FIREWALL_LINKS.length)];
+            packets.push({ link, dir: 1, d: 0, speed: 5 + Math.random() * 3 });
+            continue;
+          }
+          blockedAt = t;
+          const at = add(route.pts[route.pts.length - 1], [0, 0.6, 0]);
+          for (let k = 0; k < 7; k++) {
+            const a = Math.random() * Math.PI - Math.PI;
+            sparks.push({ p: at, v: [Math.cos(a) * 2.2, 1.5 + Math.random() * 2, Math.sin(a) * 1.4 - 0.6], born: t });
+          }
+          continue;
+        }
+        if (pk.d < 0) continue;
+        (route.bad ? [RED, RED, RED_MID, RED_DARK] : [GREEN, GREEN, GREEN_MID, GREEN_DARK]).forEach((fill, k) => {
+          const d = pk.d - k * spacing;
+          if (d < 0) return;
+          const p = project(add(pointAt(route.pts, d), [0, 0.25, 0]));
+          const x = Math.floor(p[0]);
+          const y = Math.floor(p[1] * SUB);
+          fillPixel(x, y, p[2] - 0.05, fill);
+          fillPixel(x, y + 1, p[2] - 0.05, fill);
+        });
+      }
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        const s = sparks[i];
+        const age = t - s.born;
+        if (age > 0.45) {
+          sparks.splice(i, 1);
+          continue;
+        }
+        const p = project(add(s.p, [s.v[0] * age, s.v[1] * age - 4 * age * age, s.v[2] * age]));
+        const x = Math.floor(p[0]);
+        const y = Math.floor(p[1] * SUB);
+        const fill = age < 0.2 ? RED : RED_MID;
+        for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) fillPixel(x + dx, y + dy, p[2] - 0.1, fill);
+      }
+    }
+
     function render(t: number, dt: number) {
       depth.fill(Infinity);
       pdepth.fill(Infinity);
@@ -748,7 +889,11 @@ const { after } = Astro.props;
         for (const link of LINKS) for (let i = 1; i < link.pts.length; i++) drawPixelLine(link.pts[i - 1], link.pts[i], LIT);
         // Parts read from their solid faces; only the board keeps a drawn rim.
         for (const edge of BOARD_EDGES) drawLine(edge.a, edge.b, RIM_EDGE);
+        for (const route of ROUTES) {
+          for (let i = 1; i < route.pts.length; i++) drawPixelLine(route.pts[i - 1], route.pts[i], route.bad ? RED_DARK : GREEN_DARK);
+        }
         drawPackets(t, dt);
+        drawThreats(t, dt);
       }
       paint();
     }
@@ -783,7 +928,8 @@ const { after } = Astro.props;
     function drawStill() {
       setPose(REST);
       packets.length = 0;
-      LINKS.forEach((_, i) => packets.push({ link: i, dir: 1, d: LENGTHS[i] * ((0.3 + i * 0.37) % 1), speed: 0 }));
+      INNER_LINKS.forEach((i) => packets.push({ link: i, dir: 1, d: LENGTHS[i] * ((0.3 + i * 0.37) % 1), speed: 0 }));
+      ROUTES.forEach((route, r) => threats.push({ route: r, d: route.length * 0.55, speed: 0 }));
       render(4, 0);
     }
 
