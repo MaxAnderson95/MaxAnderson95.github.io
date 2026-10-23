@@ -1,6 +1,6 @@
-/* Hallmark · shape: one-screen home (Stage hero holding the about panel), Index (/blog/, /tags/), Long Document (posts), Rows (/work-history/), Table (/certifications/) · genre: modern-minimal · theme: Cobalt (deal 2/3, seed senior-platform-engineer-personal-044b·49b1a43f·2026-10-23·r0) · redesign: full · job: hire
- * hero: Banner (/blog), Banner (/tags), Banner (/work-history), Banner (/certifications), Stage (/) · nav: slab, paper-2 with keycap · footer: none, at the owner's request · imagery: the owner portrait in the duotone, post feature images · signature: an ASCII field where unsorted packets thicken toward a spine and leave it as one lane per tag (per issuer on /certifications), each lane labelled with its real count; repeated behind every Banner head
- * axes: light/grotesk-sans/cool · posture: restrained · contrast: pass · fold: pass · finish-review: subagent · 8 findings · 7 resolved 1 unresolved (the portrait stays below the fold; the field is the hero) · draw: 0bc930 (Corridor to Stage: the field needs the right seven columns to show raw, spine and lanes in one frame) · v2.0.0 */
+/* Hallmark · shape: one-screen home (Stage hero holding the about panel), Index (/blog/, /tags/), Long Document (posts), Rows (/work-history/), Table (/certifications/) · genre: modern-minimal · theme: Cobalt night, after boat.dev, a solid night-blue page throughout (deal 2/3, seed senior-platform-engineer-personal-044b·49b1a43f·2026-10-23·r0) · redesign: full · job: hire
+ * hero: Banner (/blog), Banner (/tags), Banner (/work-history), Banner (/certifications), Stage (/) · nav: slab on the page blue with a white keycap · footer: none, at the owner's request · imagery: the owner portrait in a cobalt duotone, post feature images · signature: on /, an isometric cloud network map in square pixels with packets on its cables; on Banner heads, a pixel field where unsorted packets thicken toward a spine and leave it as one lane per tag (per issuer on /certifications), each lane labelled with its real count; repeated behind every Banner head
+ * axes: dark/grotesk-sans/cool · posture: restrained · contrast: pass · fold: pass · finish-review: subagent · 8 findings · 7 resolved 1 unresolved (the portrait stays below the fold; the field is the hero) · draw: 0bc930 (Corridor to Stage: the field needs the right seven columns to show raw, spine and lanes in one frame) · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H4 E4 S5 R4 V5 · weakest: P, a personal site argues by its writing; the home page leads with the post index straight after the field so the claim is the archive */
 /* Hallmark · waive 78 · the h2s on the list pages are post titles in an Index and company names in Rows, no section heads · each title is an item set at title size */
 /* Hallmark · waive 49b · the wrapping links are article titles inside h2 headings, two to five lines at 320px · a post title is the article's real name and cannot shorten */
@@ -128,9 +128,9 @@ a {
   gap: var(--space-xs);
   min-height: 48px;
   padding-inline: var(--space-lg);
-  border: var(--rule-hair) solid var(--color-rule-2);
+  border: var(--rule-hair) solid var(--color-night-5);
   border-radius: var(--radius-input);
-  background: var(--color-key-face);
+  background: transparent;
   color: var(--color-ink);
   font: 500 var(--text-md) / 1 var(--font-display);
   white-space: nowrap;
@@ -141,6 +141,7 @@ a {
 
 .key:hover {
   transform: translateY(-1px);
+  background: var(--color-night-2);
 }
 
 .key:active {
@@ -148,10 +149,11 @@ a {
   box-shadow: var(--shadow-key-press);
 }
 
-.key--primary {
-  background: var(--color-accent);
-  border-color: var(--color-accent-edge);
-  color: var(--color-accent-ink);
+.key--primary,
+.key--primary:hover {
+  background: var(--color-key-face);
+  border-color: var(--color-night-6);
+  color: var(--color-key-ink);
   box-shadow: var(--shadow-key-accent);
 }
 
@@ -192,8 +194,8 @@ a {
 /* ===== Navigation (slab) ===== */
 
 .site-nav {
-  background: var(--color-paper-2);
-  border-bottom: var(--rule-hair) solid var(--color-rule-2);
+  background: var(--color-paper);
+  border-bottom: var(--rule-hair) solid var(--color-rule);
 }
 
 .site-nav__inner {
@@ -335,6 +337,11 @@ a {
   flex: 1;
   display: flex;
   overflow: clip;
+}
+
+.hero .field {
+  background-image: none;
+  mask-image: none;
 }
 
 .hero__grid {
@@ -638,8 +645,7 @@ a {
   max-width: 40%;
 }
 
-.page-head > .field,
-.page-head > .field--live {
+.page-head > .field:not(.field--live) {
   mask-image: linear-gradient(180deg, var(--color-ink) 75%, transparent);
 }
 

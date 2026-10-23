@@ -2,6 +2,8 @@
 html, body { overflow-x: clip; }
 html { scrollbar-color: var(--color-muted) var(--color-paper); scroll-padding-top: var(--space-3xl); }
 body { margin: 0; background: var(--color-paper); color: var(--color-ink); font-family: var(--font-body); font-size: var(--text-md); line-height: 1.55; -webkit-font-smoothing: antialiased; caret-color: var(--color-accent); }
+/* The page texture: a fine, even dot screen in night-4, one dot every 3px. */
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: url("/img/dither.png") 0 0 / 3px 3px repeat; image-rendering: pixelated; }
 ::selection { background: color-mix(in oklab, var(--color-accent) 22%, transparent); color: var(--color-ink); }
 :focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.16em; }
@@ -21,7 +23,7 @@ button, input, select, textarea { font: inherit; }
 [data-slot] > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
 [data-slot]:has(> img) > :not(img):not([data-keep]) { display: none !important; }
 @media (prefers-reduced-motion: reduce) { *:not(.keep-motion), *:not(.keep-motion)::before, *:not(.keep-motion)::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
-/* photographs: duotone graphite paper */
-[data-slot]:has(> img) { isolation: isolate; background: var(--color-paper); outline: 1px solid color-mix(in oklab, var(--color-ink) 8%, transparent); outline-offset: -1px; }
+/* photographs: cobalt duotone, highlights in the lightest night tone and shadows in the darkest */
+[data-slot]:has(> img) { isolation: isolate; background: var(--color-night-7); outline: 1px solid color-mix(in oklab, var(--color-ink) 8%, transparent); outline-offset: -1px; }
 [data-slot] > img { z-index: 0; filter: grayscale(1) contrast(1.08); mix-blend-mode: multiply; }
 [data-slot]:has(> img)::before { content: ""; position: absolute; inset: 0; z-index: 1; background: var(--color-graphite); mix-blend-mode: lighten; pointer-events: none; }

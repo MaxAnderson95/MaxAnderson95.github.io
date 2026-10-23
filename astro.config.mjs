@@ -25,7 +25,7 @@ export default defineConfig({
         borderRadius: '0.5rem',
         borderWidth: '1px',
         borderColor: 'var(--color-rule)',
-        codeBackground: '#121823',
+        codeBackground: '#0a143a',
         frames: {
           editorActiveTabBackground: 'transparent',
           editorActiveTabBorderColor: 'transparent',

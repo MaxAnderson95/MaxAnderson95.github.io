@@ -1,0 +1,822 @@
+---
+// The home hero ground: an isometric cloud architecture map floating in the
+// cobalt page, drawn in square pixels with ASCII grain and linework, and
+// packets running between its services. On load the camera glides close over
+// the map, pulls out to reveal it, then holds.
+interface Props {
+  /** Selector, within the parent, of the element the picture sits beside */
+  after: string;
+}
+
+const { after } = Astro.props;
+---
+
+<div class="field" data-network data-after={after} aria-hidden="true">
+  <canvas class="field__canvas"></canvas>
+</div>
+
+<script>
+  type V3 = [number, number, number];
+
+  type Shape =
+    | { shape: "box"; c: V3; h: V3; kind?: number }
+    | { shape: "cyl"; c: V3; r: number; hh: number; kind?: number }
+    | { shape: "ball"; c: V3; r: number; kind?: number };
+
+  type Part = Shape & { kind: number; node: number; lo: V3; hi: V3 };
+
+  interface Pose {
+    center: V3;
+    zoom: number;
+  }
+
+  interface Edge {
+    a: V3;
+    b: V3;
+  }
+
+  interface Zone {
+    x0: number;
+    x1: number;
+    z0: number;
+    z1: number;
+    /** Networks are dashed outlines; subnets inside them are filled. */
+    dashed: boolean;
+  }
+
+  const CELL_W = 5;
+  const CELL_H = 10;
+  const FONT = "8.4px";
+  const INTRO_FRAME_MS = 1000 / 60;
+  const REST_FRAME_MS = 1000 / 30;
+  const RAY_BACK = 200;
+  const GRID = 4;
+  const BOARD = { x0: -34, x1: 41, z0: -30, z1: 24 };
+  const BOARD_DEPTH = 1.2;
+  const EDGE_STEP = 2;
+  // Fills are drawn on square half-cells: two pixel rows per text row.
+  const SUB = 2;
+  const PIX_H = CELL_H / SUB;
+  // Columns over which the diagram dithers in beside the text.
+  const FADE_COLS = 22;
+
+  // Parts of kind OPS (cluster plinths, queues) get a darker top.
+  const EDGE = 0;
+  const NETWORK = 1;
+  const COMPUTE = 2;
+  const DATA = 3;
+  const OPS = 4;
+  const BOARD_KIND = 5;
+
+  const REST: Pose = { center: [7, -4, 0], zoom: 0.98 };
+  const INTRO_S = 10;
+
+  const add = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+  const sub = (a: V3, b: V3): V3 => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const mul = (a: V3, k: number): V3 => [a[0] * k, a[1] * k, a[2] * k];
+  const dot = (a: V3, b: V3) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const cross = (a: V3, b: V3): V3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const norm = (a: V3): V3 => mul(a, 1 / Math.hypot(a[0], a[1], a[2]));
+  const lerp = (a: V3, b: V3, k: number): V3 => add(a, mul(sub(b, a), k));
+  const clamp01 = (k: number) => Math.max(0, Math.min(1, k));
+  const ease = (k: number) => k * k * (3 - 2 * k);
+
+  const LIGHT = norm([0.35, 0.55, 1]);
+
+  // True isometric: looking 45° round and 35.26° down, both floor axes draw at
+  // 30° from horizontal. The camera never turns, so these stay fixed.
+  const ISO_YAW = Math.PI / 4;
+  const ISO_PITCH = Math.atan(Math.SQRT1_2);
+  const FWD: V3 = [
+    -Math.sin(ISO_YAW) * Math.cos(ISO_PITCH),
+    -Math.sin(ISO_PITCH),
+    -Math.cos(ISO_YAW) * Math.cos(ISO_PITCH),
+  ];
+  const RIGHT = norm(cross(FWD, [0, 1, 0]));
+  const UP = cross(RIGHT, FWD);
+
+  function noise(x: number, y: number, t: number) {
+    const a = Math.sin(x * 0.11 + t * 0.7 + Math.sin(y * 0.23 + t * 0.4) * 1.9);
+    const b = Math.cos(y * 0.17 - t * 0.5 + Math.sin(x * 0.07 - t * 0.2) * 2.3);
+    return (a * b + 1) / 2;
+  }
+
+  // ---- The diagram -------------------------------------------------------
+
+  const box = (x: number, y0: number, z: number, hx: number, hy: number, hz: number, kind?: number): Shape => ({
+    shape: "box",
+    c: [x, y0 + hy, z],
+    h: [hx, hy, hz],
+    kind,
+  });
+  const cyl = (x: number, y0: number, z: number, r: number, height: number): Shape => ({
+    shape: "cyl",
+    c: [x, y0 + height / 2, z],
+    r,
+    hh: height / 2,
+  });
+  const ball = (x: number, y: number, z: number, r: number): Shape => ({ shape: "ball", c: [x, y, z], r });
+
+  // A Kubernetes cluster: a plinth with a grid of node cubes on it.
+  const cluster = (x: number, z: number, nx = 3, nz = 2): Shape[] => [
+    box(x, 0, z, nx * 1.3 + 0.1, 0.12, nz * 1.5, OPS),
+    ...Array.from({ length: nx * nz }, (_, k) => {
+      const i = (k % nx) - (nx - 1) / 2;
+      const j = Math.floor(k / nx) - (nz - 1) / 2;
+      return box(x + i * 2.6, 0.24, z + j * 3, 0.72, 0.8, 0.72);
+    }),
+  ];
+  const stack = (x: number, z: number, r: number, n: number) => Array.from({ length: n }, (_, i) => cyl(x, i * 1.1, z, r, 1));
+  const row = (x: number, z: number, n: number, gap: number, along: "x" | "z", make: (x: number, z: number) => Shape) =>
+    Array.from({ length: n }, (_, i) => {
+      const o = (i - (n - 1) / 2) * gap;
+      return along === "x" ? make(x + o, z) : make(x, z + o);
+    });
+
+  // Each node has an anchor on the floor where its cables meet it.
+  const NODES: { name: string; kind: number; at: [number, number]; shapes: Shape[] }[] = [
+    // The edge: users, DNS, CDN, firewall and the VPN gateway.
+    { name: "users", kind: EDGE, at: [-29, 0], shapes: [ball(-29, 1.8, 0, 1.5), cyl(-29, 0, 0, 0.45, 0.4)] },
+    { name: "dns", kind: NETWORK, at: [-24, -7], shapes: [cyl(-24, 0, -7, 1.2, 0.6), cyl(-24, 0.6, -7, 0.7, 0.6)] },
+    { name: "cdn", kind: NETWORK, at: [-24, 0], shapes: [box(-24, 0, 0, 1.6, 0.6, 1.6), box(-24, 1.2, 0, 0.9, 0.45, 0.9)] },
+    { name: "vpn", kind: NETWORK, at: [-24, 7], shapes: [box(-24, 0, 7, 1.3, 0.5, 1), ball(-24, 1.5, 7, 0.5)] },
+    { name: "waf", kind: NETWORK, at: [-19, 0], shapes: [box(-19, 0, 0, 0.4, 1, 2.6)] },
+    // Shared services in the back corner.
+    { name: "monitoring", kind: OPS, at: [-28, -24], shapes: [box(-28, 0, -24, 0.55, 1.8, 0.55), ball(-28, 4.3, -24, 0.75)] },
+    { name: "registry", kind: COMPUTE, at: [-22, -24], shapes: [0, 1, 2].map((i) => box(-22, i * 0.7, -24, 1.4 - i * 0.25, 0.32, 1.4 - i * 0.25)) },
+    { name: "ci", kind: COMPUTE, at: [-28, -17], shapes: row(-28, -17, 3, 1.4, "x", (x, z) => box(x, 0, z, 0.55, 0.9, 1.2)) },
+    { name: "vault", kind: DATA, at: [-21, -17], shapes: [box(-21, 0, -17, 1.4, 0.3, 1.4), cyl(-21, 0.6, -17, 0.9, 1)] },
+    // The primary network's public subnet.
+    { name: "lb", kind: NETWORK, at: [-8, 0], shapes: [box(-8, 0, 0, 1.8, 0.45, 1.2), cyl(-8, 0.9, 0, 0.6, 0.35)] },
+    { name: "apigw", kind: NETWORK, at: [-8, -8], shapes: [box(-8, 0, -8, 1.6, 0.5, 1.6), box(-8, 1, -8, 1, 0.4, 1)] },
+    { name: "nat", kind: NETWORK, at: [-8, 8], shapes: [cyl(-8, 0, 8, 1.1, 1)] },
+    // The app subnet.
+    { name: "clusterA", kind: COMPUTE, at: [3, -8], shapes: cluster(3, -8) },
+    { name: "clusterB", kind: COMPUTE, at: [3, 6], shapes: cluster(3, 6) },
+    { name: "clusterC", kind: COMPUTE, at: [3, -20], shapes: cluster(3, -20, 3, 1) },
+    { name: "vms", kind: COMPUTE, at: [3, 16], shapes: row(3, 16, 3, 2.5, "x", (x, z) => box(x, 0, z, 0.9, 1.3, 0.9)) },
+    {
+      name: "functions",
+      kind: COMPUTE,
+      at: [11, -12],
+      shapes: [-1, 0, 1].flatMap((i) => [-1, 0, 1].map((j) => box(11 + i * 1.5, 0, -12 + j * 1.5, 0.55, 0.55, 0.55))),
+    },
+    { name: "queue", kind: OPS, at: [11, 0], shapes: row(11, 0, 5, 1.05, "x", (x, z) => box(x, 0, z, 0.45, 0.5, 0.9)) },
+    { name: "stream", kind: OPS, at: [11, 8], shapes: row(11, 8, 3, 1.1, "z", (x, z) => box(x, 0, z, 1.8, 0.35, 0.4)) },
+    { name: "batch", kind: COMPUTE, at: [11, 16], shapes: [-1, 1].flatMap((i) => [-1, 1].map((j) => box(11 + i * 1.1, 0, 16 + j * 1.1, 0.45, 0.9, 0.45))) },
+    // The data subnet.
+    { name: "cache", kind: DATA, at: [18, -20], shapes: [cyl(18, 0, -20, 1.2, 1.3)] },
+    { name: "search", kind: DATA, at: [24.5, -20], shapes: row(24.5, -20, 3, 1.9, "x", (x, z) => cyl(x, 0, z, 0.75, 1.8)) },
+    { name: "db", kind: DATA, at: [19, -6], shapes: stack(19, -6, 1.7, 3) },
+    { name: "replica", kind: DATA, at: [25, -6], shapes: stack(25, -6, 1.4, 2) },
+    { name: "warehouse", kind: DATA, at: [19, 6], shapes: [box(19, 0, 6, 2.2, 1.1, 2.2), box(19, 2.2, 6, 1.4, 0.5, 1.4)] },
+    { name: "storage", kind: DATA, at: [25, 6], shapes: [cyl(25, 0, 6, 1.4, 1.5)] },
+    { name: "backup", kind: DATA, at: [22, 16], shapes: [box(22, 0, 16, 2.6, 0.8, 1.5)] },
+    // The recovery region.
+    { name: "drdb", kind: DATA, at: [36, -6], shapes: stack(36, -6, 1.5, 2) },
+    { name: "drcluster", kind: COMPUTE, at: [36, 7], shapes: cluster(36, 7, 2, 2) },
+    { name: "drstorage", kind: DATA, at: [36, -17], shapes: [cyl(36, 0, -17, 1.3, 1.4)] },
+  ];
+
+  const nodeIndex = new Map(NODES.map((n, i) => [n.name, i]));
+
+  const PARTS: Part[] = NODES.flatMap((n, node) =>
+    n.shapes.map((s): Part => {
+      const ext: V3 = s.shape === "box" ? s.h : s.shape === "cyl" ? [s.r, s.hh, s.r] : [s.r, s.r, s.r];
+      return { ...s, kind: s.kind ?? n.kind, node, lo: sub(s.c, ext), hi: add(s.c, ext) };
+    })
+  );
+
+  const SLAB = {
+    shape: "box",
+    c: [(BOARD.x0 + BOARD.x1) / 2, -BOARD_DEPTH / 2, (BOARD.z0 + BOARD.z1) / 2],
+    h: [(BOARD.x1 - BOARD.x0) / 2, BOARD_DEPTH / 2, (BOARD.z1 - BOARD.z0) / 2],
+    kind: BOARD_KIND,
+    node: -1,
+    lo: [BOARD.x0, -BOARD_DEPTH, BOARD.z0],
+    hi: [BOARD.x1, 0, BOARD.z1],
+  } satisfies Part;
+
+  // Network boundaries, Cloudcraft style: dashed networks (the primary and
+  // the recovery region) with filled subnets for each tier.
+  const ZONES: Zone[] = [
+    { x0: -13, x1: 30, z0: -27, z1: 21, dashed: true },
+    { x0: 32, x1: 39.5, z0: -22, z1: 13, dashed: true },
+    { x0: -31.5, x1: -16.5, z0: -10, z1: 10, dashed: false },
+    { x0: -31.5, x1: -17, z0: -27.5, z1: -14, dashed: false },
+    { x0: -11.5, x1: -4.5, z0: -11, z1: 11, dashed: false },
+    { x0: -2, x1: 14.5, z0: -25, z1: 19.5, dashed: false },
+    { x0: 16, x1: 28.5, z0: -25, z1: 19.5, dashed: false },
+  ];
+
+  const zoneAt = (x: number, z: number) => {
+    for (let k = ZONES.length - 1; k >= 0; k--) {
+      const zone = ZONES[k];
+      if (x >= zone.x0 && x <= zone.x1 && z >= zone.z0 && z <= zone.z1) return k;
+    }
+    return -1;
+  };
+
+  const ZONE_EDGES: Edge[] = ZONES.flatMap(({ x0, x1, z0, z1 }) => {
+    const c: V3[] = [
+      [x0, 0.01, z0],
+      [x1, 0.01, z0],
+      [x1, 0.01, z1],
+      [x0, 0.01, z1],
+    ];
+    return c.map((a, k) => ({ a, b: c[(k + 1) % 4] }));
+  });
+
+  // A 4×4 ordered-dither matrix, for fades made of whole cells.
+  const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
+  const bayer = (x: number, y: number) => BAYER[(x & 3) + (y & 3) * 4];
+
+  function hash(x: number, y: number) {
+    const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+    return h - Math.floor(h);
+  }
+
+  // The board's visible edges, worked out once since the view is fixed: an
+  // edge shows when either face meeting along it faces the camera.
+  function boxEdges(c: V3, h: V3): Edge[] {
+    const out: Edge[] = [];
+    const corner = (k: V3): V3 => [c[0] + k[0] * h[0], c[1] + k[1] * h[1], c[2] + k[2] * h[2]];
+    for (let axis = 0; axis < 3; axis++) {
+      const b = (axis + 1) % 3;
+      const d = (axis + 2) % 3;
+      for (const sb of [-1, 1]) {
+        for (const sd of [-1, 1]) {
+          if (!(sb * FWD[b] < 0 || sd * FWD[d] < 0)) continue;
+          const k0: V3 = [0, 0, 0];
+          k0[b] = sb;
+          k0[d] = sd;
+          const k1: V3 = [...k0];
+          k0[axis] = -1;
+          k1[axis] = 1;
+          out.push({ a: corner(k0), b: corner(k1) });
+        }
+      }
+    }
+    return out;
+  }
+
+  const BOARD_EDGES = boxEdges(SLAB.c, SLAB.h);
+
+  // Cables run along the floor between node anchors, turning once at a right
+  // angle: along x first and then z, or the reverse when the route says "z".
+  const LINKS: { from: number; to: number; pts: V3[] }[] = (
+    [
+      ["users", "cdn"],
+      ["users", "dns", "z"],
+      ["users", "vpn", "z"],
+      ["cdn", "waf"],
+      ["waf", "lb"],
+      ["vpn", "lb"],
+      ["lb", "apigw"],
+      ["lb", "nat"],
+      ["lb", "clusterA"],
+      ["lb", "clusterB"],
+      ["apigw", "functions", "z"],
+      ["clusterA", "clusterC"],
+      ["clusterA", "queue"],
+      ["clusterB", "queue"],
+      ["clusterB", "vms", "z"],
+      ["queue", "stream"],
+      ["stream", "batch"],
+      ["clusterC", "cache"],
+      ["functions", "search"],
+      ["queue", "db"],
+      ["db", "replica"],
+      ["replica", "drdb"],
+      ["drdb", "drstorage"],
+      ["clusterB", "warehouse"],
+      ["warehouse", "storage"],
+      ["storage", "drcluster"],
+      ["batch", "backup"],
+      ["monitoring", "ci", "z"],
+      ["ci", "vault"],
+      ["registry", "clusterC"],
+      ["vault", "apigw"],
+      ["dns", "monitoring", "z"],
+    ] as [string, string, "z"?][]
+  ).map(([from, to, order]) => {
+    const [ax, az] = NODES[nodeIndex.get(from)!].at;
+    const [bx, bz] = NODES[nodeIndex.get(to)!].at;
+    const corner: [number, number] = order === "z" ? [ax, bz] : [bx, az];
+    return {
+      from: nodeIndex.get(from)!,
+      to: nodeIndex.get(to)!,
+      pts: [[ax, az], corner, [bx, bz]].map(([x, z]): V3 => [x, 0.02, z]),
+    };
+  });
+
+  function pathLength(pts: V3[]) {
+    let total = 0;
+    for (let i = 1; i < pts.length; i++) total += Math.hypot(...sub(pts[i], pts[i - 1]));
+    return total;
+  }
+
+  function pointAt(pts: V3[], d: number): V3 {
+    for (let i = 1; i < pts.length; i++) {
+      const seg = Math.hypot(...sub(pts[i], pts[i - 1]));
+      if (d <= seg) return lerp(pts[i - 1], pts[i], seg ? d / seg : 0);
+      d -= seg;
+    }
+    return pts[pts.length - 1];
+  }
+
+  const LENGTHS = LINKS.map((l) => pathLength(l.pts));
+
+  // ---- Ray tests (the camera is orthographic, so every ray shares a direction)
+
+  function hitPart(p: Part, o: V3, d: V3): { t: number; n: V3 } | null {
+    if (p.shape === "box") {
+      let tmin = -Infinity;
+      let tmax = Infinity;
+      let axis = 0;
+      let sign = 1;
+      for (let i = 0; i < 3; i++) {
+        const inv = 1 / d[i];
+        let t1 = (p.c[i] - p.h[i] - o[i]) * inv;
+        let t2 = (p.c[i] + p.h[i] - o[i]) * inv;
+        let s = -1;
+        if (t1 > t2) {
+          [t1, t2] = [t2, t1];
+          s = 1;
+        }
+        if (t1 > tmin) {
+          tmin = t1;
+          axis = i;
+          sign = s;
+        }
+        if (t2 < tmax) tmax = t2;
+      }
+      if (!Number.isFinite(tmin) || tmax < tmin) return null;
+      const n: V3 = [0, 0, 0];
+      n[axis] = sign;
+      return { t: tmin, n };
+    }
+
+    if (p.shape === "cyl") {
+      let best = Infinity;
+      let n: V3 = [0, 1, 0];
+      const top = (p.c[1] + p.hh - o[1]) / d[1];
+      const tx = o[0] + d[0] * top - p.c[0];
+      const tz = o[2] + d[2] * top - p.c[2];
+      if (tx * tx + tz * tz <= p.r * p.r) best = top;
+      const ox = o[0] - p.c[0];
+      const oz = o[2] - p.c[2];
+      const a = d[0] * d[0] + d[2] * d[2];
+      const b = ox * d[0] + oz * d[2];
+      const q = b * b - a * (ox * ox + oz * oz - p.r * p.r);
+      if (q >= 0) {
+        const t = (-b - Math.sqrt(q)) / a;
+        if (t < best && Math.abs(o[1] + d[1] * t - p.c[1]) <= p.hh) {
+          best = t;
+          n = [(ox + d[0] * t) / p.r, 0, (oz + d[2] * t) / p.r];
+        }
+      }
+      return best < Infinity ? { t: best, n } : null;
+    }
+
+    const oc = sub(o, p.c);
+    const b = dot(oc, d);
+    const q = b * b - (dot(oc, oc) - p.r * p.r);
+    if (q < 0) return null;
+    const t = -b - Math.sqrt(q);
+    return { t, n: mul(add(oc, mul(d, t)), 1 / p.r) };
+  }
+
+  // 0 for tops, 1 for the lit side, 2 for the shaded side.
+  function shadeOf(n: V3) {
+    if (n[1] > 0.7) return 0;
+    return dot(n, LIGHT) > 0.45 ? 1 : 2;
+  }
+
+  // ---- Rendering ---------------------------------------------------------
+
+  function initNetwork(root: HTMLElement) {
+    const canvas = root.querySelector("canvas");
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+
+    const scope = root.parentElement ?? root;
+    const css = getComputedStyle(root);
+    const token = (name: string) => css.getPropertyValue(name).trim();
+    const mono = token("--font-outlier");
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Cell fills, darkest first. Index 0 is the sky, painted as the base.
+    const NIGHT = [0, 1, 2, 3, 4, 5, 6, 7].map((k) => token(`--color-night-${k}`));
+    const FILLS = [NIGHT[1], NIGHT[2], NIGHT[3], NIGHT[4], NIGHT[5], NIGHT[6], NIGHT[7], NIGHT[0], token("--color-paper"), token("--color-accent-2")];
+    const SKY = 0;
+    const TILE = 2;
+    const ZONE = 3;
+    const LIT = 4;
+    const PLINTH = 5;
+    const TOP = 6;
+    const SHADE = 7;
+    const FLASH = 9;
+    // Fills for a part's top, lit side and shaded side.
+    const faceFill = (kind: number) => [kind === OPS ? PLINTH : TOP, LIT, SHADE];
+    const BOARD_FACES = [TILE, LIT, SHADE];
+
+    const styles: { color: string; alpha: number; bold?: boolean }[] = [];
+    const style = (color: string, alpha = 1, bold = false) => styles.push({ color, alpha, bold }) - 1;
+    const RIM_EDGE = style(NIGHT[6], 0.9, true);
+    const ZONE_EDGE = style(NIGHT[7], 0.8);
+    const NET_EDGE = style(NIGHT[6], 0.55);
+    const GRAIN_STYLE = style(NIGHT[5], 0.45);
+
+    let width = 0;
+    let height = 0;
+    let cols = 0;
+    let rows = 0;
+    let clipLeft = 0;
+    let centerX = 0;
+    let centerY = 0;
+    let baseScale = 1;
+    let wide = true;
+    let prows = 0;
+    // The text grid: glyphs, and the nearest surface in each cell.
+    let depth = new Float32Array(0);
+    let styleAt = new Uint8Array(0);
+    let glyphAt: string[] = [];
+    // The pixel grid: fills and their depths.
+    let pdepth = new Float32Array(0);
+    let fillAt = new Uint8Array(0);
+
+    let scale = 1;
+    let center: V3 = REST.center;
+
+    const packets: { link: number; d: number; dir: 1 | -1; speed: number }[] = [];
+    const flashAt = new Float32Array(NODES.length).fill(-10);
+    let nextSpawn = 0;
+    let startedAt = -1;
+    let running = false;
+    let last = 0;
+    let prevT = 0;
+    let raf = 0;
+
+    function resize() {
+      const rect = root.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      width = rect.width;
+      height = rect.height;
+      canvas!.width = Math.round(width * dpr);
+      canvas!.height = Math.round(height * dpr);
+      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+      cols = Math.ceil(width / CELL_W);
+      rows = Math.ceil(height / CELL_H);
+      wide = width >= 960;
+      const afterEl = root.dataset.after ? scope.querySelector(root.dataset.after) : null;
+      const left = afterEl ? afterEl.getBoundingClientRect().right - rect.left + 48 : width * 0.45;
+      clipLeft = Math.floor(left / CELL_W);
+      centerX = (left + width) / 2;
+      centerY = height * 0.5;
+      baseScale = (width - left) / 50;
+      depth = new Float32Array(cols * rows);
+      styleAt = new Uint8Array(cols * rows);
+      prows = rows * SUB;
+      pdepth = new Float32Array(cols * prows);
+      fillAt = new Uint8Array(cols * prows);
+      glyphAt = new Array(cols * rows);
+    }
+
+    function setPose(pose: Pose) {
+      center = pose.center;
+      scale = baseScale * pose.zoom;
+    }
+
+    // A ray through the centre of pixel (x, py).
+    function rayOrigin(x: number, py: number): V3 {
+      const u = ((x + 0.5) * CELL_W - centerX) / scale;
+      const v = -((py + 0.5) * PIX_H - centerY) / scale;
+      return [
+        center[0] + RIGHT[0] * u + UP[0] * v - FWD[0] * RAY_BACK,
+        center[1] + RIGHT[1] * u + UP[1] * v - FWD[1] * RAY_BACK,
+        center[2] + RIGHT[2] * u + UP[2] * v - FWD[2] * RAY_BACK,
+      ];
+    }
+
+    function project(p: V3): [number, number, number] {
+      const rel = sub(p, center);
+      return [
+        (centerX + dot(rel, RIGHT) * scale) / CELL_W,
+        (centerY - dot(rel, UP) * scale) / CELL_H,
+        dot(rel, FWD) + RAY_BACK,
+      ];
+    }
+
+    // An edge sample shows unless a surface sits clearly in front of it; the
+    // slack covers the gap between a cell's centre and the true edge.
+    function mark(x: number, y: number, z: number, ch: string, s: number) {
+      if (x < clipLeft || y < 0 || x >= cols || y >= rows) return;
+      const i = y * cols + x;
+      if (z > depth[i] + (EDGE_STEP * CELL_H) / scale) return;
+      if (depth[i] === Infinity) depth[i] = z;
+      glyphAt[i] = ch;
+      styleAt[i] = s;
+    }
+
+    // Lines pick their glyph from their angle. Shallow lines, like the 30°
+    // isometric edges, use ' - . _ by where they cross each cell, which
+    // draws them as smooth steps instead of staircases of slashes.
+    function drawLine(a: V3, b: V3, s: number, dashed = false) {
+      const pa = project(a);
+      const pb = project(b);
+      const dx = pb[0] - pa[0];
+      const dy = pb[1] - pa[1];
+      const angle = Math.atan2(Math.abs(dy) * CELL_H, Math.abs(dx) * CELL_W);
+      const byRow = angle > 1.2 || (angle > 0.75 && Math.abs(dy) > Math.abs(dx));
+      const from = byRow ? pa[1] : pa[0];
+      const delta = byRow ? dy : dx;
+      if (!delta) return;
+      const lo = Math.ceil(Math.min(from, from + delta) - 0.5);
+      const hi = Math.floor(Math.max(from, from + delta) - 0.5);
+      for (let k = lo; k <= hi; k++) {
+        if (dashed && k % 4 === 3) continue;
+        const f = (k + 0.5 - from) / delta;
+        const fx = pa[0] + dx * f;
+        const fy = pa[1] + dy * f;
+        const x = Math.floor(fx);
+        const y = Math.floor(fy);
+        let ch = "|";
+        if (angle <= 0.75) {
+          const frac = fy - y;
+          ch = frac < 0.29 ? "'" : frac < 0.5 ? "-" : frac < 0.72 ? "." : "_";
+        } else if (angle <= 1.2) ch = dx * dy < 0 ? "/" : "\\";
+        mark(x, y, pa[2] + (pb[2] - pa[2]) * f, ch, s);
+      }
+    }
+
+    function fillPixel(x: number, py: number, z: number, fill: number, slack = 0) {
+      if (x < clipLeft || py < 0 || x >= cols || py >= prows) return;
+      const i = py * cols + x;
+      if (z > pdepth[i] + slack) return;
+      pdepth[i] = Math.min(pdepth[i], z);
+      fillAt[i] = fill;
+    }
+
+    // A line of solid pixels, one per step along its longer axis.
+    function drawPixelLine(a: V3, b: V3, fill: number) {
+      const pa = project(a);
+      const pb = project(b);
+      const ay = pa[1] * SUB;
+      const by = pb[1] * SUB;
+      const steps = Math.ceil(Math.max(Math.abs(pb[0] - pa[0]), Math.abs(by - ay)));
+      const slack = (EDGE_STEP * PIX_H) / scale;
+      for (let k = 0; k <= steps; k++) {
+        const f = steps ? k / steps : 0;
+        fillPixel(Math.floor(pa[0] + (pb[0] - pa[0]) * f), Math.floor(ay + (by - ay) * f), pa[2] + (pb[2] - pa[2]) * f - 0.01, fill, slack);
+      }
+    }
+
+    // The board's top is laid in alternating tiles, with a + at each grid
+    // crossing, and subnets filled a step lighter.
+    function drawGround() {
+      const tol = (0.6 * CELL_W) / scale;
+      for (let py = 0; py < prows; py++) {
+        const y = Math.floor(py / SUB);
+        const glyphRow = py % SUB === 0;
+        for (let x = clipLeft; x < cols; x++) {
+          const o = rayOrigin(x, py);
+          const hit = hitPart(SLAB, o, FWD);
+          if (!hit) continue;
+          const p = py * cols + x;
+          const i = y * cols + x;
+          pdepth[p] = hit.t;
+          depth[i] = Math.min(depth[i], hit.t);
+          if (hit.n[1] < 0.7) {
+            fillAt[p] = BOARD_FACES[shadeOf(hit.n)];
+            continue;
+          }
+          const px = o[0] + FWD[0] * hit.t;
+          const pz = o[2] + FWD[2] * hit.t;
+          const zone = zoneAt(px, pz);
+          const subnet = zone >= 0 && !ZONES[zone].dashed;
+          fillAt[p] = subnet ? ZONE : TILE;
+          if (!glyphRow) continue;
+          const onX = Math.abs(px / GRID - Math.round(px / GRID)) * GRID < tol;
+          const onZ = Math.abs(pz / GRID - Math.round(pz / GRID)) * GRID < tol;
+          if (onX && onZ) {
+            glyphAt[i] = "+";
+            styleAt[i] = GRAIN_STYLE;
+          } else if (subnet ? hash(x, y) < 0.35 : (Math.floor(px / GRID) + Math.floor(pz / GRID)) & 1) {
+            glyphAt[i] = subnet ? ":" : ".";
+            styleAt[i] = GRAIN_STYLE;
+          }
+        }
+      }
+    }
+
+    function fillParts(t: number, list: Part[]) {
+      for (const part of list) {
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+        for (let k = 0; k < 8; k++) {
+          const p = project([k & 1 ? part.hi[0] : part.lo[0], k & 2 ? part.hi[1] : part.lo[1], k & 4 ? part.hi[2] : part.lo[2]]);
+          minX = Math.min(minX, p[0]);
+          maxX = Math.max(maxX, p[0]);
+          minY = Math.min(minY, p[1]);
+          maxY = Math.max(maxY, p[1]);
+        }
+        const x0 = Math.max(clipLeft, Math.floor(minX));
+        const x1 = Math.min(cols - 1, Math.ceil(maxX));
+        const y0 = Math.max(0, Math.floor(minY * SUB));
+        const y1 = Math.min(prows - 1, Math.ceil(maxY * SUB));
+        const flashing = part.node >= 0 && t - flashAt[part.node] < 0.35;
+        const faces = faceFill(part.kind);
+        for (let py = y0; py <= y1; py++) {
+          for (let x = x0; x <= x1; x++) {
+            const p = py * cols + x;
+            const hit = hitPart(part, rayOrigin(x, py), FWD);
+            if (!hit || hit.t >= pdepth[p]) continue;
+            const shade = shadeOf(hit.n);
+            pdepth[p] = hit.t;
+            fillAt[p] = flashing && shade === 0 ? FLASH : faces[shade];
+            const i = Math.floor(py / SUB) * cols + x;
+            depth[i] = Math.min(depth[i], hit.t);
+            glyphAt[i] = "";
+          }
+        }
+      }
+    }
+
+    function drawPackets(t: number, dt: number) {
+      if (dt > 0 && t >= nextSpawn) {
+        const link = Math.floor(Math.random() * LINKS.length);
+        const dir = Math.random() < 0.75 ? 1 : -1;
+        packets.push({ link, dir, d: dir === 1 ? 0 : LENGTHS[link], speed: 5 + Math.random() * 3 });
+        nextSpawn = t + 0.08 + Math.random() * 0.14;
+      }
+      const spacing = Math.max(0.2, (1.1 * PIX_H) / scale);
+      for (let i = packets.length - 1; i >= 0; i--) {
+        const pk = packets[i];
+        const link = LINKS[pk.link];
+        pk.d += pk.dir * pk.speed * dt;
+        if (pk.d < 0 || pk.d > LENGTHS[pk.link]) {
+          flashAt[pk.dir === 1 ? link.to : link.from] = t;
+          packets.splice(i, 1);
+          continue;
+        }
+        // A white head cell with a fading trail of lighter blues.
+        [TOP, TOP, PLINTH, LIT].forEach((fill, k) => {
+          const p = project(add(pointAt(link.pts, pk.d - pk.dir * k * spacing), [0, 0.25, 0]));
+          fillPixel(Math.floor(p[0]), Math.floor(p[1] * SUB), p[2] - 0.05, fill);
+        });
+      }
+    }
+
+    // The diagram dithers in over the columns next to the text.
+    const hidden = (x: number, py: number) => (x - clipLeft) / FADE_COLS < bayer(x, py);
+
+    function paint() {
+      for (let py = 0; py < prows; py++) {
+        for (let x = 0; x < cols; x++) {
+          const p = py * cols + x;
+          if (pdepth[p] === Infinity || hidden(x, py)) fillAt[p] = SKY;
+        }
+      }
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const i = y * cols + x;
+          if (depth[i] === Infinity || hidden(x, y * SUB)) {
+            glyphAt[i] = "";
+          }
+        }
+      }
+
+      // The sky is left clear so the page's dither texture shows through.
+      ctx!.clearRect(0, 0, width, height);
+      // Runs of one fill along a row are drawn as one rectangle.
+      let fill = -1;
+      for (let py = 0; py < prows; py++) {
+        let x = 0;
+        while (x < cols) {
+          const f = fillAt[py * cols + x];
+          let end = x + 1;
+          while (end < cols && fillAt[py * cols + end] === f) end++;
+          if (f !== SKY) {
+            if (f !== fill) {
+              fill = f;
+              ctx!.fillStyle = FILLS[f];
+            }
+            ctx!.fillRect(x * CELL_W, py * PIX_H, (end - x) * CELL_W, PIX_H);
+          }
+          x = end;
+        }
+      }
+
+      const regular = `${FONT} ${mono}`;
+      const heavy = `700 ${FONT} ${mono}`;
+      ctx!.textBaseline = "top";
+      let color = "";
+      let font = "";
+      for (let i = 0; i < glyphAt.length; i++) {
+        if (!glyphAt[i]) continue;
+        const x = i % cols;
+        const s = styles[styleAt[i]];
+        ctx!.globalAlpha = s.alpha;
+        if (s.color !== color) {
+          color = s.color;
+          ctx!.fillStyle = color;
+        }
+        const want = s.bold ? heavy : regular;
+        if (want !== font) {
+          font = want;
+          ctx!.font = font;
+        }
+        ctx!.fillText(glyphAt[i], x * CELL_W, ((i - x) / cols) * CELL_H);
+      }
+      ctx!.globalAlpha = 1;
+    }
+
+    function render(t: number, dt: number) {
+      depth.fill(Infinity);
+      pdepth.fill(Infinity);
+      glyphAt.fill("");
+      if (wide) {
+        drawGround();
+        fillParts(t, PARTS);
+        ZONE_EDGES.forEach((edge, k) => {
+          const { dashed } = ZONES[k >> 2];
+          drawLine(edge.a, edge.b, dashed ? NET_EDGE : ZONE_EDGE, dashed);
+        });
+        for (const link of LINKS) for (let i = 1; i < link.pts.length; i++) drawPixelLine(link.pts[i - 1], link.pts[i], LIT);
+        // Parts read from their solid faces; only the board keeps a drawn rim.
+        for (const edge of BOARD_EDGES) drawLine(edge.a, edge.b, RIM_EDGE);
+        drawPackets(t, dt);
+      }
+      paint();
+    }
+
+    // The intro: a close glide from the CDN toward the clusters, then a slow
+    // pull-back that reveals the board. The angle stays isometric throughout.
+    function poseAt(elapsed: number): Pose {
+      if (still || elapsed >= INTRO_S) return REST;
+      const glide = ease(clamp01(elapsed / 6));
+      const reveal = ease(clamp01((elapsed - 4) / 5.5));
+      const flyover = lerp([-27, 0.8, 0.5], [-7, 0.8, -4], glide);
+      return {
+        center: lerp(flyover, REST.center, reveal),
+        zoom: Math.exp(Math.log(5.5 - 1.2 * glide) * (1 - reveal) + Math.log(REST.zoom) * reveal),
+      };
+    }
+
+    function frame(now: number) {
+      if (!running) return;
+      raf = requestAnimationFrame(frame);
+      const t = now / 1000;
+      if (startedAt < 0) startedAt = t;
+      const elapsed = t - startedAt;
+      if (now - last < (wide && elapsed < INTRO_S ? INTRO_FRAME_MS : REST_FRAME_MS)) return;
+      last = now;
+      const dt = Math.min(0.1, t - prevT);
+      prevT = t;
+      setPose(poseAt(elapsed));
+      render(t, dt);
+    }
+
+    function drawStill() {
+      setPose(REST);
+      packets.length = 0;
+      LINKS.forEach((_, i) => packets.push({ link: i, dir: 1, d: LENGTHS[i] * ((0.3 + i * 0.37) % 1), speed: 0 }));
+      render(4, 0);
+    }
+
+    resize();
+    root.classList.add("field--live");
+
+    const refresh = () => {
+      resize();
+      if (still) drawStill();
+    };
+    new ResizeObserver(refresh).observe(root);
+    document.fonts.ready.then(refresh);
+
+    if (still) {
+      drawStill();
+      return;
+    }
+
+    function start() {
+      if (running) return;
+      running = true;
+      prevT = performance.now() / 1000;
+      raf = requestAnimationFrame(frame);
+    }
+
+    function stop() {
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+
+    new IntersectionObserver(([entry]) => (entry.isIntersecting ? start() : stop())).observe(root);
+    document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-network]").forEach(initNetwork);
+</script>

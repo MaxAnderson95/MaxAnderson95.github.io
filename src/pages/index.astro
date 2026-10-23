@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Navbar from "../components/Navbar.astro";
-import AsciiField from "../components/AsciiField.astro";
+import AsciiNetwork from "../components/AsciiNetwork.astro";
 import Hero from "../components/Hero";
 import RoleTyper from "../components/RoleTyper.astro";
 import { siteData } from "../data/site";
@@ -12,7 +12,7 @@ import { siteData } from "../data/site";
 
   <main id="main-content" tabindex="-1" class="home flex-1">
     <section class="hero" aria-label="Introduction">
-      <AsciiField rawAfter=".hero__column" />
+      <AsciiNetwork after=".hero__column" />
       <div class="wrap hero__grid">
         <Hero name={siteData.name} bio={siteData.bio} emailUrl={siteData.socials.email.url}>
           <RoleTyper roles={["Senior Platform Engineer", "Cloud-Native Engineer", "Infrastructure Engineer"]} />
