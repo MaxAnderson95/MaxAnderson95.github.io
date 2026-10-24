@@ -3,7 +3,7 @@ title: "DNS Precheck Failure for NSX Application Platform on RKE2"
 date: 2022-11-20T18:23:30Z
 readTime: "2 min read"
 tags: ["NSX", "NAPP", "K8s", "RKE2"]
-excerpt: "During my quest to roll out the new NSX Application Platform in our production environment, I came across a very odd issue when running through the installation wizard to instal..."
+excerpt: "During my quest to roll out the new NSX Application Platform in our production environment, I came across a very odd issue when running through the installation wizard..."
 ---
 
 ## The Problem

@@ -68,7 +68,7 @@ const { lanes = [], unit = "", rawAfter } = Astro.props;
     const SHADES = [2, 3, 4, 5, 6, 7].map((k) => token(`--color-night-${k}`));
     const labelInk = token("--color-ink-2");
     const countInk = token("--color-muted");
-    const mono = token("--font-outlier");
+    const labelFont = token("--font-display");
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     let cols = 0;
@@ -108,7 +108,7 @@ const { lanes = [], unit = "", rawAfter } = Astro.props;
       const hasLanes = lanes.length > 0;
       const rawStart = narrow ? 0 : (anchoredStart ?? Math.round(cols * 0.42));
       const spine = narrow || !hasLanes ? cols : Math.round(cols * 0.66);
-      ctx!.font = `12px ${mono}`;
+      ctx!.font = `500 14px ${labelFont}`;
       const countText = (lane: Lane) => (lane.count === undefined ? "" : `${lane.count} ${unit}${lane.count === 1 ? "" : "s"}`);
       const labelWidth = Math.max(0, ...lanes.map((l) => ctx!.measureText(`${l.label} ${countText(l)}`).width));
       const labelCol = Math.floor((width - labelWidth - 16) / PX);

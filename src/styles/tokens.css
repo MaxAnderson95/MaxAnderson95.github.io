@@ -61,10 +61,7 @@
   --radius-input: 6px;
   --radius-pill: 999px;
   --shadow-card: 0 1px 2px oklch(12% 0.05 268 / 0.3);
-  --shadow-key: 0 3px 0 0 var(--color-night-0);
-  --shadow-key-accent: 0 3px 0 0 var(--color-night-5), 0 6px 10px -4px oklch(10% 0.05 268 / 0.5);
   --shadow-menu: 0 12px 28px -8px oklch(10% 0.06 268 / 0.6);
-  --shadow-key-press: inset 0 1px 2px oklch(10% 0.05 268 / 0.4);
   --tracking-display: -0.028em;
 }
 :root {

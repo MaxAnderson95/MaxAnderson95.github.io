@@ -32,7 +32,7 @@ import { issuerLanes, resolvedCerts } from "../../lib/certifications";
               <th scope="col">Valid until</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody data-reveal>
             {resolvedCerts.map((cert) => (
               <CertCard
                 name={cert.name}

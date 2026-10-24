@@ -37,7 +37,7 @@ export default function WorkTimelineCard({
   const isCurrent = latestEnd === null;
 
   return (
-    <article className="job" aria-label={`Work history at ${company}`}>
+    <article className="job" data-reveal="" aria-label={`Work history at ${company}`}>
       <div className="job__head">
         <h2 className="job__company">
           {companyUrl ? (

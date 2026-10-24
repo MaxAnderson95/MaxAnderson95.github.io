@@ -3,7 +3,7 @@ title: "Deploying a highly-available Pi-hole ad-blocker on K8s"
 date: 2023-01-07T00:00:00Z
 readTime: "11 min read"
 tags: ["pihole", "K8s", "RKE2"]
-excerpt: "In my home lab I run a three node Kubernetes cluster using the [RKE2 distribution](https://docs.rke2.io/) from Rancher Labs. I use this for testing/experimentation, running my U..."
+excerpt: "In my home lab I run a three node Kubernetes cluster using the RKE2 distribution from Rancher Labs. I use this for testing/experimentation, running my..."
 featureImage: "/img/blog/pi-hole-ha-on-k8s/feature.jpg"
 featureImageAlt: "Pi-hole admin dashboard showing DNS query statistics on a Kubernetes cluster"
 ---

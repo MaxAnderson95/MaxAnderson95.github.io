@@ -10,7 +10,7 @@ interface Props {
 
 export default function Hero({ name, bio, emailUrl, children }: Props) {
   return (
-    <div className="hero__column">
+    <div className="hero__column" data-reveal="">
       <div className="hero__ident">
         <figure className="hero__portrait cut" data-slot="portrait" data-alt="Max Anderson, head and shoulders">
           <img src="/img/me.png" alt="Max Anderson" width="667" height="800" fetchPriority="high" />
