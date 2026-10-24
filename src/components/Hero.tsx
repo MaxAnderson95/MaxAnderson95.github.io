@@ -21,7 +21,7 @@ export default function Hero({ name, bio, emailUrl, children }: Props) {
       <p className="hero__lede">{bio}</p>
       <div className="hero__actions">
         <a href="/blog/" className="key key--primary">
-          Read the writing
+          Read my blog
         </a>
         <a href={emailUrl} className="key" data-email-menu="">
           Email me
