@@ -213,8 +213,18 @@ const { lanes = [], unit = "", rawAfter } = Astro.props;
 
     if (still) return;
 
-    new IntersectionObserver(([entry]) => (entry.isIntersecting ? start() : stop())).observe(root);
-    document.addEventListener("visibilitychange", () => (document.hidden ? stop() : start()));
+    // Run only while the canvas is on screen and the tab is visible. The
+    // observer can hand over several queued entries at once, so the newest
+    // one decides; Safari can also restore the page from its back-forward
+    // cache without a visibility change, so pageshow re-checks too.
+    let onScreen = false;
+    const sync = () => (onScreen && !document.hidden ? start() : stop());
+    new IntersectionObserver((entries) => {
+      onScreen = entries[entries.length - 1].isIntersecting;
+      sync();
+    }).observe(root);
+    document.addEventListener("visibilitychange", sync);
+    window.addEventListener("pageshow", sync);
 
     const hero = root.parentElement ?? root;
     hero.addEventListener("pointermove", (event) => {
