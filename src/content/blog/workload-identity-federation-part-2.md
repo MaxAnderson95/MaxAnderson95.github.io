@@ -3,7 +3,7 @@ title: "Passwordless GitHub Auth for ArgoCD Using Workload Identity Federation"
 date: 2025-08-25T00:00:00Z
 readTime: "2 min read"
 tags: ["DevOps", "Security", "OIDC", "Workload Identity Federation", "GitHub", "ArgoCD", "Kubernetes", "K8s"]
-excerpt: "In my previous article, I explored Workload Identity Federation (WIF) and its benefits for secure authentication in cloud-native environments. WIF removes the need for long‑live..."
+excerpt: "In my previous article, I explored Workload Identity Federation (WIF) and its benefits for secure authentication in cloud-native environments."
 draft: true
 ---
 

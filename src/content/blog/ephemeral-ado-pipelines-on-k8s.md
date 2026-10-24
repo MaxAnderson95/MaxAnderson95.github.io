@@ -3,7 +3,7 @@ title: "Creating Fully Ephemeral Azure Pipelines Agents in Kubernetes (K8s)"
 date: 2024-01-13T18:23:30Z
 readTime: "10 min read"
 tags: ["Azure DevOps", "Azure Pipelines", "K8s"]
-excerpt: "At my current job, we use Azure DevOps and Azure Pipelines for code repos and CI/CD. For the vast majority of our pipelines, we use Microsoft's hosted agents. They're easy to us..."
+excerpt: "At my current job, we use Azure DevOps and Azure Pipelines for code repos and CI/CD. For the vast majority of our pipelines, we use Microsoft's hosted agents. They're easy to use..."
 featureImage: "/img/blog/ephemeral-ado-pipelines-on-k8s/feature.png"
 featureImageAlt: "Azure DevOps pipeline running on an ephemeral Kubernetes agent pod"
 ---

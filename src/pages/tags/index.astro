@@ -29,7 +29,7 @@ const tags = [...tagCounts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
     </header>
 
     <div class="page-body">
-      <ul role="list" class="tag-index">
+      <ul role="list" class="tag-index" data-reveal>
         {tags.map(([tag, count]) => (
           <li>
             <a href={`/tags/${slugifyTag(tag)}/`}>

@@ -27,6 +27,7 @@ export default defineConfig({
         borderColor: 'var(--color-rule)',
         codeBackground: '#0a143a',
         frames: {
+          shadowColor: 'transparent',
           editorActiveTabBackground: 'transparent',
           editorActiveTabBorderColor: 'transparent',
           editorTabBarBackground: 'transparent',

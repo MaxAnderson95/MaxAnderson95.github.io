@@ -28,7 +28,7 @@ export default function BlogCard({
   const isAboveFold = index < 2;
 
   return (
-    <article className="post-row">
+    <article className="post-row" data-reveal="">
       <div className="post-row__meta">
         <time dateTime={rawDate}>{date}</time>
         <span>{readTime}</span>

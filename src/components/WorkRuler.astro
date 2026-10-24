@@ -18,7 +18,8 @@ const origin = firstYear * 12;
 const span = lastYear * 12 - origin;
 const pct = (months: number) => ((months - origin) / span) * 100;
 
-const years = Array.from({ length: lastYear - firstYear + 1 }, (_, i) => firstYear + i);
+const years = Array.from({ length: lastYear - firstYear }, (_, i) => firstYear + i);
+const yearWidth = 100 / years.length;
 
 const companies = workHistory
   .map((entry) => {
@@ -37,19 +38,24 @@ const companies = workHistory
   .sort((a, b) => a.start - b.start);
 ---
 
-<figure class="ruler" style={`--year-count: ${years.length - 1};`}>
-  <ol role="list" class="ruler__companies">
+<figure class="ruler">
+  <div class="ruler__bands" aria-hidden="true">
+    {years.map((year, i) => i % 2 === 0 && (
+      <span style={`--left: ${pct(year * 12).toFixed(3)}%; --width: ${yearWidth.toFixed(3)}%;`}></span>
+    ))}
+  </div>
+  <ol role="list" class="ruler__companies" data-reveal>
     {companies.map((c, i) => (
       <li class="ruler__company-group" style={`--company: var(--color-company-${((companies.length - 1 - i) % 3) + 1});`}>
         <p class="ruler__company" style={`--start: ${c.start.toFixed(3)}%;`}>
           {c.company} <span class="ruler__years">{c.years}</span>
         </p>
         <ol role="list" class="ruler__roles">
-          {c.roles.map((role) => (
+          {c.roles.map((role, i) => (
             <li
               class="ruler__role"
               data-label={role.labelBefore ? "before" : "after"}
-              style={`--start: ${role.start.toFixed(3)}%; --width: ${role.width.toFixed(3)}%;`}
+              style={`--start: ${role.start.toFixed(3)}%; --width: ${role.width.toFixed(3)}%; --bar-i: ${i};`}
             >
               <span class="ruler__bar" aria-hidden="true"></span>
               <span class="ruler__title">{role.title}</span>
@@ -61,7 +67,7 @@ const companies = workHistory
   </ol>
   <div class="ruler__axis" aria-hidden="true">
     {years.map((year) => (
-      <span class="ruler__year" style={`--left: ${pct(year * 12).toFixed(3)}%;`}>{year}</span>
+      <span class="ruler__year" style={`--left: ${pct(year * 12 + 6).toFixed(3)}%;`}>{year}</span>
     ))}
   </div>
 </figure>
