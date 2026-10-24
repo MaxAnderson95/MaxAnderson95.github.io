@@ -73,10 +73,9 @@ const { after } = Astro.props;
   const USER_GROUND = 10;
 
   const REST: Pose = { center: [6.8, -1, -8.8], zoom: 0.86 };
-  // On phones the map is its own panel under the text, framed on the
-  // perimeter: the firewall, the user and the attacker, and the corner of the
-  // board behind them.
-  const REST_NARROW: Pose = { center: [-6, -1, -22], zoom: 0.78 };
+  // On phones the map fills the hero behind the text (dimmed by CSS), framed
+  // so the board and the security scene both sit in view.
+  const REST_NARROW: Pose = { center: [4, -1, -8], zoom: 1.5 };
   const INTRO_S = 10;
 
   const add = (a: V3, b: V3): V3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
@@ -755,9 +754,8 @@ const { after } = Astro.props;
     }
 
     // The diagram dithers in over the columns next to the text.
-    // On phones the panel dithers in from its top edge instead.
-    const hidden = (x: number, py: number) =>
-      wide ? (x - clipLeft) / FADE_COLS < bayer(x, py) : py / FADE_COLS < bayer(x, py);
+    // On phones the map is a full background, so nothing fades.
+    const hidden = (x: number, py: number) => wide && (x - clipLeft) / FADE_COLS < bayer(x, py);
 
     function paint() {
       for (let py = 0; py < prows; py++) {

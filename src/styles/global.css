@@ -487,26 +487,64 @@ a {
 }
 
 @media (max-width: 60rem) {
-  /* On phones and tablets the map is its own panel under the text. */
-  .hero {
-    flex-direction: column;
-  }
-
-  .hero > .field {
-    position: relative;
-    order: 1;
-    height: clamp(20rem, 85vw, 30rem);
-    flex: none;
+  /* On phones and tablets the map runs behind the whole hero, under a tinted
+     glass pane so the text over it stays easy to read. */
+  .hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: color-mix(in oklab, var(--color-night-1) 78%, transparent);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
   }
 
   .hero__grid {
     grid-template-columns: minmax(0, 1fr);
-    align-content: start;
-    padding-bottom: 0;
+    align-content: center;
+    padding-block: var(--space-xl) calc(var(--space-2xl) + env(safe-area-inset-bottom));
   }
 
   .hero__column {
     grid-column: 1;
+    gap: var(--space-lg);
+  }
+
+  .hero__ident {
+    gap: var(--space-md);
+  }
+
+  .hero__portrait {
+    width: 7.5rem;
+  }
+
+  .roles {
+    margin-top: calc(var(--space-sm) * -1);
+  }
+}
+
+/* Short phone screens (an iPhone SE with Safari's bars showing) tighten the
+   hero so the buttons stay above the toolbar. */
+@media (max-width: 60rem) and (max-height: 640px) {
+  .hero__grid {
+    padding-block: var(--space-lg) calc(var(--space-xl) + env(safe-area-inset-bottom));
+  }
+
+  .hero__column {
+    gap: var(--space-md);
+  }
+
+  .hero__portrait {
+    width: 5.5rem;
+  }
+
+  .hero__name {
+    font-size: 2.25rem;
+  }
+
+  .hero__lede {
+    font-size: var(--text-md);
   }
 }
 
@@ -615,20 +653,36 @@ a {
     white-space: normal;
   }
 
+  /* Each role reads as its title, then its bar on a faint track that spans
+     the whole timeline, so the bar's position shows when it ran. */
   .ruler__role {
     height: auto;
     display: grid;
     gap: var(--space-2xs);
-    padding-block: var(--space-2xs);
+    padding-block: var(--space-xs);
+  }
+
+  .ruler__role::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: var(--space-xs);
+    height: 6px;
+    border-radius: 2px;
+    background: color-mix(in oklab, var(--color-rule) 60%, transparent);
   }
 
   .ruler__bar {
     position: relative;
     top: 0;
+    left: 0;
+    margin-left: var(--start);
     height: 6px;
   }
 
   .ruler__title {
+    order: -1;
     position: static;
     line-height: 1.4;
     white-space: normal;
