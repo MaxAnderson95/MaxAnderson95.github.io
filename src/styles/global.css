@@ -306,13 +306,22 @@ a {
 }
 
 @media (max-width: 48rem) {
-  .site-nav__social,
   .site-nav .key {
     display: none;
   }
 
   .site-nav__inner {
-    gap: var(--space-xs);
+    gap: var(--space-2xs);
+  }
+
+  .site-nav__social {
+    gap: 0;
+    padding-left: 0;
+  }
+
+  /* Narrower than 44px so the whole row fits a 360px screen; the tap target keeps its 44px height. */
+  .site-nav .icon-link {
+    min-width: 32px;
   }
 
   .site-nav__mark {
@@ -322,6 +331,16 @@ a {
   .site-nav__link {
     padding-inline: var(--space-xs);
     font-size: var(--text-sm);
+  }
+}
+
+@media (max-width: 22.5rem) {
+  .site-nav__mark {
+    font-size: var(--text-sm);
+  }
+
+  .site-nav__link {
+    padding-inline: var(--space-2xs);
   }
 }
 
